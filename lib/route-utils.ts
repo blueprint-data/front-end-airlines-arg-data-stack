@@ -21,6 +21,55 @@ export interface RouteTotals {
 
 const normalizeText = (value?: string) => value?.trim().toLowerCase() ?? ""
 const normalizeCode = (value?: string) => value?.trim().toUpperCase() ?? ""
+const OTHER_COUNTRY_LABEL = "Otros"
+const OTHER_COUNTRY_NORMALIZED = normalizeText(OTHER_COUNTRY_LABEL)
+const OTHER_CITY_SEPARATOR = " - "
+const isMissingCountry = (value?: string) => !value || !value.trim()
+const isOtherCountryFilter = (value?: string) =>
+  normalizeText(value) === OTHER_COUNTRY_NORMALIZED
+
+type DestinationLookup = Map<string, { city?: string; country?: string }>
+
+function buildDestinationLookup(routes: RouteMetric[]): DestinationLookup {
+  const lookup: DestinationLookup = new Map()
+  for (const route of routes) {
+    const code = normalizeCode(route.destination_airport_code)
+    if (!code) {
+      continue
+    }
+    const city = route.destination_city?.trim()
+    const country = route.destination_country?.trim()
+    if (!city && !country) {
+      continue
+    }
+    const existing = lookup.get(code)
+    lookup.set(code, {
+      city: existing?.city ?? city,
+      country: existing?.country ?? country,
+    })
+  }
+  return lookup
+}
+
+function resolveDestination(route: RouteMetric, lookup?: DestinationLookup) {
+  const code = normalizeCode(route.destination_airport_code)
+  const fallback = code ? lookup?.get(code) : undefined
+  const city =
+    route.destination_city?.trim() ||
+    fallback?.city ||
+    route.destination_airport_code?.trim() ||
+    "N/A"
+  const country = route.destination_country?.trim() || fallback?.country
+  return { city, country }
+}
+
+function formatOtherCityLabel(route: RouteMetric, lookup?: DestinationLookup) {
+  const resolved = resolveDestination(route, lookup)
+  if (resolved.country) {
+    return `${resolved.city}${OTHER_CITY_SEPARATOR}${resolved.country}`
+  }
+  return resolved.city
+}
 
 export function getUniqueOrigins(routes: RouteMetric[]) {
   const origins = new Map<string, RouteOrigin>()
@@ -47,7 +96,9 @@ export function getUniqueCountries(routes: RouteMetric[], originCode?: string) {
         (route) => normalizeCode(route.origin_airport_code) === originFilter
       )
     : routes
-  return [...new Set(filtered.map((route) => route.destination_country?.trim()))]
+  return [
+    ...new Set(filtered.map((route) => route.destination_country?.trim())),
+  ]
     .filter((country): country is string => Boolean(country?.length))
     .sort()
 }
@@ -55,24 +106,39 @@ export function getUniqueCountries(routes: RouteMetric[], originCode?: string) {
 export function getUniqueCities(
   routes: RouteMetric[],
   originCode?: string,
-  country?: string
+  country?: string,
+  lookupRoutes?: RouteMetric[]
 ) {
   let filtered = routes
   const originFilter = normalizeCode(originCode)
   const countryFilter = normalizeText(country)
+  const lookup = buildDestinationLookup(lookupRoutes ?? routes)
   if (originFilter) {
     filtered = filtered.filter(
       (route) => normalizeCode(route.origin_airport_code) === originFilter
     )
   }
   if (countryFilter) {
-    filtered = filtered.filter(
-      (route) => normalizeText(route.destination_country) === countryFilter
-    )
+    if (isOtherCountryFilter(country)) {
+      filtered = filtered.filter((route) =>
+        isMissingCountry(route.destination_country)
+      )
+    } else {
+      filtered = filtered.filter(
+        (route) => normalizeText(route.destination_country) === countryFilter
+      )
+    }
   }
-  return [...new Set(filtered.map((route) => route.destination_city?.trim()))]
-    .filter((city): city is string => Boolean(city?.length))
-    .sort()
+  const cities = new Set<string>()
+  for (const route of filtered) {
+    const value = isOtherCountryFilter(country)
+      ? formatOtherCityLabel(route, lookup)
+      : resolveDestination(route, lookup).city
+    if (value?.trim()) {
+      cities.add(value)
+    }
+  }
+  return Array.from(cities).sort()
 }
 
 export function getUniqueAirlines(
@@ -85,20 +151,35 @@ export function getUniqueAirlines(
   const originFilter = normalizeCode(originCode)
   const countryFilter = normalizeText(country)
   const cityFilter = normalizeText(city)
+  const lookup = cityFilter ? buildDestinationLookup(routes) : undefined
   if (originFilter) {
     filtered = filtered.filter(
       (route) => normalizeCode(route.origin_airport_code) === originFilter
     )
   }
   if (countryFilter) {
-    filtered = filtered.filter(
-      (route) => normalizeText(route.destination_country) === countryFilter
-    )
+    if (isOtherCountryFilter(country)) {
+      filtered = filtered.filter((route) =>
+        isMissingCountry(route.destination_country)
+      )
+    } else {
+      filtered = filtered.filter(
+        (route) => normalizeText(route.destination_country) === countryFilter
+      )
+    }
   }
   if (cityFilter) {
-    filtered = filtered.filter(
-      (route) => normalizeText(route.destination_city) === cityFilter
-    )
+    if (isOtherCountryFilter(country)) {
+      filtered = filtered.filter(
+        (route) =>
+          normalizeText(formatOtherCityLabel(route, lookup)) === cityFilter
+      )
+    } else {
+      filtered = filtered.filter(
+        (route) =>
+          normalizeText(resolveDestination(route, lookup).city) === cityFilter
+      )
+    }
   }
   const airlines = new Map<string, RouteAirline>()
   for (const route of filtered) {
@@ -129,6 +210,7 @@ export function filterRoutes(
   const countryFilter = normalizeText(filters.country)
   const cityFilter = normalizeText(filters.city)
   const airlineFilter = normalizeCode(filters.airline)
+  const lookup = cityFilter ? buildDestinationLookup(routes) : undefined
 
   if (originFilter) {
     filtered = filtered.filter(
@@ -136,14 +218,28 @@ export function filterRoutes(
     )
   }
   if (countryFilter) {
-    filtered = filtered.filter(
-      (route) => normalizeText(route.destination_country) === countryFilter
-    )
+    if (isOtherCountryFilter(filters.country)) {
+      filtered = filtered.filter((route) =>
+        isMissingCountry(route.destination_country)
+      )
+    } else {
+      filtered = filtered.filter(
+        (route) => normalizeText(route.destination_country) === countryFilter
+      )
+    }
   }
   if (cityFilter) {
-    filtered = filtered.filter(
-      (route) => normalizeText(route.destination_city) === cityFilter
-    )
+    if (isOtherCountryFilter(filters.country)) {
+      filtered = filtered.filter(
+        (route) =>
+          normalizeText(formatOtherCityLabel(route, lookup)) === cityFilter
+      )
+    } else {
+      filtered = filtered.filter(
+        (route) =>
+          normalizeText(resolveDestination(route, lookup).city) === cityFilter
+      )
+    }
   }
   if (airlineFilter) {
     filtered = filtered.filter(

@@ -17,6 +17,7 @@ import {
   getUniqueCities,
   getUniqueCountries,
   getUniqueOrigins,
+  filterRoutes,
 } from "@/lib/route-utils"
 
 interface FiltersProps {
@@ -52,14 +53,37 @@ export function Filters({
     [routes]
   )
 
+  const routesForCountries = useMemo(
+    () =>
+      filterRoutes(routes, {
+        origin: origin || undefined,
+        airline: airline || undefined,
+      }),
+    [routes, origin, airline]
+  )
+
   const countries = useMemo(
-    () => getUniqueCountries(routes, origin).filter((v) => v.trim().length > 0),
-    [routes, origin]
+    () =>
+      getUniqueCountries(routesForCountries).filter((v) => v.trim().length > 0),
+    [routesForCountries]
+  )
+
+  const routesForCities = useMemo(
+    () =>
+      filterRoutes(routes, {
+        origin: origin || undefined,
+        country: country || undefined,
+        airline: airline || undefined,
+      }),
+    [routes, origin, country, airline]
   )
 
   const cities = useMemo(
-    () => getUniqueCities(routes, origin, country).filter((v) => v.trim().length > 0),
-    [routes, origin, country]
+    () =>
+      getUniqueCities(routesForCities, origin, country, routes).filter(
+        (v) => v.trim().length > 0
+      ),
+    [routesForCities, origin, country, routes]
   )
 
   const airlines = useMemo(
@@ -126,8 +150,8 @@ export function Filters({
               Aeropuerto de origen
             </Label>
             <Select
-              value={origin}
-              onValueChange={setOrigin}
+              value={origin || "all"}
+              onValueChange={(value) => setOrigin(value === "all" ? "" : value)}
               disabled={origins.length === 0}
             >
               <SelectTrigger
@@ -142,15 +166,20 @@ export function Filters({
                     Sin opciones disponibles
                   </SelectItem>
                 ) : (
-                  origins.map((o, index) => (
-                    <SelectItem
-                      key={`origin-${o.code}-${index}`}
-                      value={o.code}
-                      className="py-3 touch-manipulation"
-                    >
-                      {o.code} – {o.city}
+                  <>
+                    <SelectItem value="all" className="py-3 touch-manipulation">
+                      Todos los orígenes
                     </SelectItem>
-                  ))
+                    {origins.map((o, index) => (
+                      <SelectItem
+                        key={`origin-${o.code}-${index}`}
+                        value={o.code}
+                        className="py-3 touch-manipulation"
+                      >
+                        {o.code} – {o.city}
+                      </SelectItem>
+                    ))}
+                  </>
                 )}
               </SelectContent>
             </Select>
@@ -162,8 +191,8 @@ export function Filters({
               País de destino
             </Label>
             <Select
-              value={country}
-              onValueChange={setCountry}
+              value={country || "all"}
+              onValueChange={(value) => setCountry(value === "all" ? "" : value)}
               disabled={countries.length === 0}
             >
               <SelectTrigger
@@ -178,15 +207,20 @@ export function Filters({
                     Sin opciones disponibles
                   </SelectItem>
                 ) : (
-                  countries.map((c) => (
-                    <SelectItem
-                      key={`country-${c}`}
-                      value={c}
-                      className="py-3 touch-manipulation"
-                    >
-                      {c}
+                  <>
+                    <SelectItem value="all" className="py-3 touch-manipulation">
+                      Todos los países
                     </SelectItem>
-                  ))
+                    {countries.map((c) => (
+                      <SelectItem
+                        key={`country-${c}`}
+                        value={c}
+                        className="py-3 touch-manipulation"
+                      >
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </>
                 )}
               </SelectContent>
             </Select>
@@ -198,8 +232,8 @@ export function Filters({
               Ciudad de destino
             </Label>
             <Select
-              value={city}
-              onValueChange={setCity}
+              value={city || "all"}
+              onValueChange={(value) => setCity(value === "all" ? "" : value)}
               disabled={!country || cities.length === 0}
             >
               <SelectTrigger
@@ -216,15 +250,20 @@ export function Filters({
                     Sin opciones disponibles
                   </SelectItem>
                 ) : (
-                  cities.map((c) => (
-                    <SelectItem
-                      key={`city-${c}`}
-                      value={c}
-                      className="py-3 touch-manipulation"
-                    >
-                      {c}
+                  <>
+                    <SelectItem value="all" className="py-3 touch-manipulation">
+                      Todas las ciudades
                     </SelectItem>
-                  ))
+                    {cities.map((c) => (
+                      <SelectItem
+                        key={`city-${c}`}
+                        value={c}
+                        className="py-3 touch-manipulation"
+                      >
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </>
                 )}
               </SelectContent>
             </Select>

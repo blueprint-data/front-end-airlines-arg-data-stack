@@ -1,6 +1,8 @@
 import type { RouteMetric, TopRecord } from "@/lib/types"
 
 export interface TopDestination {
+  origin_airport_code?: string
+  origin_city?: string
   destination_city: string
   destination_country: string
   total_flights: number
@@ -12,6 +14,8 @@ export function getTopDestinations(tops: TopRecord[]): TopDestination[] {
   return tops
     .filter((record) => record.record_type === "top_destination")
     .map((record) => ({
+      origin_airport_code: record.origin_airport_code ?? "",
+      origin_city: "",
       destination_city: record.destination_city ?? "",
       destination_country: record.destination_country ?? "",
       total_flights: record.total_flights ?? 0,
@@ -29,29 +33,43 @@ export function getTopDestinationsFromRoutes(
   const map = new Map<string, TopDestination>()
 
   for (const route of routes) {
-    const key = `${route.destination_city}__${route.destination_country}`
+    const originCode = route.origin_airport_code?.trim()
+    if (!originCode) {
+      continue
+    }
+
+    const destinationCity =
+      route.destination_city?.trim() ||
+      route.destination_airport_code?.trim() ||
+      "N/A"
+    const destinationCountry = route.destination_country?.trim() || "Otros"
+    const originCity = route.origin_city?.trim() ?? ""
+    const avgDelayMinutes = route.avg_delay_minutes ?? 0
+    const key = `${originCode}__${destinationCity}__${destinationCountry}`
     const existing = map.get(key)
     if (existing) {
       const totalFlights = existing.total_flights + route.total_flights
       const weightedDelay =
         existing.avg_delay_minutes * existing.total_flights +
-        route.avg_delay_minutes * route.total_flights
+        avgDelayMinutes * route.total_flights
       existing.total_flights = totalFlights
       existing.avg_delay_minutes =
         totalFlights > 0 ? weightedDelay / totalFlights : 0
     } else {
       map.set(key, {
-        destination_city: route.destination_city,
-        destination_country: route.destination_country,
+        origin_airport_code: originCode,
+        origin_city: originCity,
+        destination_city: destinationCity,
+        destination_country: destinationCountry,
         total_flights: route.total_flights,
-        avg_delay_minutes: route.avg_delay_minutes,
+        avg_delay_minutes: avgDelayMinutes,
         rank: 0,
       })
     }
   }
 
   return Array.from(map.values())
-    .filter((item) => item.destination_city && item.destination_country)
+    .filter((item) => item.destination_city)
     .sort((a, b) => b.total_flights - a.total_flights)
     .slice(0, limit)
     .map((item, index) => ({ ...item, rank: index + 1 }))

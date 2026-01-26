@@ -36,3 +36,21 @@ export function formatDateShort(value: string): string {
   }
   return dateFormatter.format(date)
 }
+
+export function formatDateForChart(value: string, isMobile = false): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+  
+  if (isMobile) {
+    // Format compact for mobile: "26/11" instead of "26-nov"
+    // Optimized: Ensure consistent format with leading zeros
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    return `${day}/${month}`
+  }
+  
+  // Original format for desktop
+  return date.toLocaleDateString("es-AR", { day: "2-digit", month: "short" })
+}

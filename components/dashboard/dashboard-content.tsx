@@ -16,7 +16,6 @@ import { Footer } from "@/components/dashboard/footer"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
 import {
     getTopDestinationsFromRoutes,
-    getTopEarly,
     getTopDelays,
 } from "@/lib/dashboard-utils"
 import { aggregateRoutes, filterRoutes } from "@/lib/route-utils"
@@ -76,14 +75,24 @@ export function DashboardContent() {
         setFilters(prev => ({ ...prev, ...updates }))
     }, [])
 
-    // Set default origin when data loads (only once)
+    // Set default origin only when there's a single option
     useEffect(() => {
         if (!hasSetDefaultOrigin.current && !filters.origin && data?.routes?.length) {
-            const firstOrigin = data.routes.find((route) => route.origin_airport_code)
-            if (firstOrigin?.origin_airport_code) {
-                hasSetDefaultOrigin.current = true
-                setFilters(prev => ({ ...prev, origin: firstOrigin.origin_airport_code }))
+            const origins = new Set(
+                data.routes
+                    .map((route) => route.origin_airport_code)
+                    .filter((origin): origin is string => Boolean(origin))
+            )
+
+            if (origins.size === 1) {
+                const [onlyOrigin] = origins
+                if (onlyOrigin) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
+                    setFilters(prev => ({ ...prev, origin: onlyOrigin }))
+                }
             }
+
+            hasSetDefaultOrigin.current = true
         }
     }, [data?.routes, filters.origin])
 
@@ -92,12 +101,14 @@ export function DashboardContent() {
         if (data?.headline?.lookback_days) {
             const days = String(data.headline.lookback_days)
             if (!searchParams.has("windowDays") && filters.windowDays !== days) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setFilters(prev => ({ ...prev, windowDays: days }))
             }
         }
     }, [data?.headline?.lookback_days, searchParams, filters.windowDays])
 
     // Memoized filtered data
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const filteredRoutes = useMemo(() => {
         if (!data?.routes?.length) return []
         return filterRoutes(data.routes, {
@@ -114,22 +125,12 @@ export function DashboardContent() {
     )
 
     const topDestinations = useMemo(
-        () => getTopDestinationsFromRoutes(filteredRoutes),
+        () => getTopDestinationsFromRoutes(filteredRoutes, 15),
         [filteredRoutes]
     )
 
     const topDelays = useMemo(() => {
         const records = data ? getTopDelays(data.tops) : []
-        return records.filter((record) => {
-            if (filters.origin && record.origin_airport_code !== filters.origin) return false
-            if (filters.country && record.destination_country !== filters.country) return false
-            if (filters.city && record.destination_city !== filters.city) return false
-            return true
-        })
-    }, [data, filters.origin, filters.country, filters.city])
-
-    const topEarly = useMemo(() => {
-        const records = data ? getTopEarly(data.tops) : []
         return records.filter((record) => {
             if (filters.origin && record.origin_airport_code !== filters.origin) return false
             if (filters.country && record.destination_country !== filters.country) return false
@@ -214,11 +215,11 @@ export function DashboardContent() {
 
                     <TopDestinationsTable data={topDestinations} />
 
-                    <TopEvents topDelays={topDelays} topEarly={topEarly} />
+                    <TopEvents topDelays={topDelays} />
 
                     <TrendChart data={data.dailyStatus} />
 
-                    <GatesAnalysis />
+                    <GatesAnalysis gates={data.gates} />
 
                     <Footer
                         generatedAt={data.generatedAt}

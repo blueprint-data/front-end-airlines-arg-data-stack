@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import {
     BarChart,
@@ -14,17 +14,7 @@ import {
     ReferenceLine,
 } from "recharts"
 import { formatNumber } from "@/lib/format"
-
-interface GateMetrics {
-    gate: string
-    total_flights: number
-    avg_delay_minutes: number
-    delayed_flights: number
-    on_time_flights: number
-    on_time_percentage: number
-    max_delay_minutes: number
-    time_distribution: number[]
-}
+import type { GateMetrics } from "@/lib/types"
 
 interface GatesAnalysisProps {
     className?: string
@@ -32,6 +22,12 @@ interface GatesAnalysisProps {
 }
 
 type ViewMode = "delay" | "flights" | "ontime" | "concurrency"
+
+type HeatmapHover = {
+    gate: string
+    hour: number
+    value: number
+}
 
 interface HeatmapData {
     hours: number[]
@@ -43,29 +39,42 @@ interface HeatmapData {
     }>
 }
 
-export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
+const HOURS = Array.from({ length: 24 }, (_, index) => index)
+const HEATMAP_GRID_TEMPLATE = "var(--heatmap-label) repeat(24, minmax(0, 1fr))"
+
+const normalizeDistribution = (distribution?: number[]) =>
+    HOURS.map((_, index) => Number(distribution?.[index] ?? 0))
+
+export function GatesAnalysisFixed({ className, gates }: GatesAnalysisProps) {
     const [viewMode, setViewMode] = useState<ViewMode>("delay")
+    const [hoveredCell, setHoveredCell] = useState<HeatmapHover | null>(null)
+    const gatesData = useMemo(() => gates ?? [], [gates])
 
     const chartData = useMemo(() => {
-        return gates
-            .map((gate) => ({
-                gate: `Gate ${gate.gate}`,
-                rawGate: gate.gate,
-                avgDelay: Math.round(gate.avg_delay_minutes * 10) / 10,
-                totalFlights: gate.total_flights,
-                onTimePercentage: gate.on_time_percentage,
-                delayedFlights: gate.delayed_flights,
-                onTimeFlights: gate.on_time_flights,
-                maxDelay: gate.max_delay_minutes,
-                timeDistribution: gate.time_distribution,
-            }))
+        return gatesData
+            .map((gate) => {
+                const rawGate = String(gate.gate ?? "").trim()
+                const label = rawGate ? `Gate ${rawGate}` : "Gate N/A"
+
+                return {
+                    gate: label,
+                    rawGate: rawGate || "N/A",
+                    avgDelay: Math.round(gate.avg_delay_minutes * 10) / 10,
+                    totalFlights: gate.total_flights,
+                    onTimePercentage: gate.on_time_percentage,
+                    delayedFlights: gate.delayed_flights,
+                    onTimeFlights: gate.on_time_flights,
+                    maxDelay: gate.max_delay_minutes,
+                    timeDistribution: normalizeDistribution(gate.time_distribution),
+                }
+            })
             .sort((a, b) => {
                 if (viewMode === "delay") return b.avgDelay - a.avgDelay
                 if (viewMode === "flights" || viewMode === "concurrency")
                     return b.totalFlights - a.totalFlights
                 return b.onTimePercentage - a.onTimePercentage
             })
-    }, [gates, viewMode])
+    }, [gatesData, viewMode])
 
     const stats = useMemo(() => {
         if (chartData.length === 0)
@@ -105,19 +114,19 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
     // Generate heatmap grid data
     const heatmapData = useMemo<HeatmapData | null>(() => {
         if (viewMode !== "concurrency") return null
-        const hours = Array.from({ length: 24 }, (_, i) => i)
-        // Find max value for normalization
         let maxVal = 0
-        gates.forEach(g => {
-            if (g.time_distribution) {
-                g.time_distribution.forEach(val => {
-                    if (val > maxVal) maxVal = val
-                })
-            }
+        chartData.forEach((gate) => {
+            gate.timeDistribution.forEach((val) => {
+                if (val > maxVal) maxVal = val
+            })
         })
 
-        return { hours, maxVal, gates: chartData }
-    }, [gates, viewMode, chartData])
+        return {
+            hours: HOURS,
+            maxVal: Math.max(maxVal, 1),
+            gates: chartData,
+        }
+    }, [chartData, viewMode])
 
     if (chartData.length === 0) {
         return null
@@ -141,7 +150,7 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                 </div>
 
                 {/* View mode toggle */}
-                <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-1 overflow-x-auto max-w-full">
+                <div className="flex max-w-full flex-wrap items-center gap-1 rounded-lg bg-muted/50 p-1">
                     {[
                         { id: "delay", label: "Demoras" },
                         { id: "flights", label: "Vuelos" },
@@ -164,17 +173,17 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
 
             <div className="rounded-xl border border-border bg-card/50 p-4 sm:p-6 backdrop-blur-sm">
                 {/* Stats summary */}
-                <div className="mb-6 grid grid-cols-3 gap-4">
-                    <div className="rounded-lg bg-muted/30 p-3 text-center">
+                <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                    <div className="rounded-lg bg-muted/30 p-3 text-left sm:text-center flex items-center justify-between sm:block">
                         <p className="text-xs text-muted-foreground">Gates Analizados</p>
-                        <p className="mt-1 text-xl font-bold font-mono text-foreground">
+                        <p className="text-lg font-bold font-mono text-foreground sm:mt-1 sm:text-xl">
                             {chartData.length}
                         </p>
                     </div>
-                    <div className="rounded-lg bg-muted/30 p-3 text-center">
+                    <div className="rounded-lg bg-muted/30 p-3 text-left sm:text-center flex items-center justify-between sm:block">
                         <p className="text-xs text-muted-foreground">Demora Prom.</p>
                         <p
-                            className={`mt-1 text-xl font-bold font-mono ${stats.avgDelay < 0
+                            className={`text-lg font-bold font-mono sm:mt-1 sm:text-xl ${stats.avgDelay < 0
                                 ? "text-green-500"
                                 : stats.avgDelay > 15
                                     ? "text-amber-500"
@@ -185,10 +194,10 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                             {formatNumber(stats.avgDelay, 1)} min
                         </p>
                     </div>
-                    <div className="rounded-lg bg-muted/30 p-3 text-center">
+                    <div className="rounded-lg bg-muted/30 p-3 text-left sm:text-center flex items-center justify-between sm:block">
                         <p className="text-xs text-muted-foreground">Puntualidad Prom.</p>
                         <p
-                            className={`mt-1 text-xl font-bold font-mono ${stats.avgOnTime >= 70
+                            className={`text-lg font-bold font-mono sm:mt-1 sm:text-xl ${stats.avgOnTime >= 70
                                 ? "text-green-500"
                                 : stats.avgOnTime >= 50
                                     ? "text-primary"
@@ -203,54 +212,104 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                 {/* Chart Area */}
                 {viewMode === "concurrency" && heatmapData ? (
                     <div className="w-full overflow-x-auto">
-                        <div className="min-w-[600px] space-y-2 sm:min-w-[650px] md:min-w-[700px] lg:min-w-[800px]">
-                            <div className="flex items-end gap-1 mb-2">
-                                <div className="w-20 text-xs font-medium text-muted-foreground text-right pr-2">
+                        <div
+                            className="min-w-[600px] space-y-2 rounded-lg bg-muted/20 p-2 sm:min-w-[700px]"
+                            onMouseLeave={() => setHoveredCell(null)}
+                        >
+                            <div className="flex flex-col gap-1 px-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                                <span>Distribución horaria por gate</span>
+                                <span className="font-mono text-foreground/80">
+                                    {hoveredCell
+                                        ? `${hoveredCell.gate} · ${String(hoveredCell.hour).padStart(2, "0")}h · ${hoveredCell.value} vuelos`
+                                        : "Hover en una celda para ver detalle"}
+                                </span>
+                            </div>
+                            <p className="px-1 text-[11px] text-muted-foreground sm:hidden">
+                                Deslizá horizontalmente para ver las 24 horas.
+                            </p>
+                            <div
+                                className="grid items-end gap-[2px] [--heatmap-label:4rem] sm:[--heatmap-label:5rem]"
+                                style={{ gridTemplateColumns: HEATMAP_GRID_TEMPLATE }}
+                            >
+                                <div className="text-xs font-medium text-muted-foreground text-right pr-2">
                                     Hora
                                 </div>
-                                {heatmapData.hours.map((h) => (
-                                    <div key={h} className="flex-1 text-center text-[10px] text-muted-foreground font-mono">
-                                        {h}h
+                                {heatmapData.hours.map((hour) => (
+                                    <div
+                                        key={hour}
+                                        className="text-center text-[10px] font-mono text-muted-foreground"
+                                    >
+                                        {String(hour).padStart(2, "0")}h
                                     </div>
                                 ))}
                             </div>
 
-                            {heatmapData.gates.map((g) => (
-                                <div key={g.rawGate} className="flex items-center gap-1 group">
-                                    <div className="w-20 text-xs font-medium text-foreground text-right pr-2 truncate" title={g.gate}>
-                                        Gate {g.rawGate}
+                            {heatmapData.gates.map((gateItem) => (
+                                <div
+                                    key={gateItem.rawGate}
+                                    className="grid items-center gap-[2px] group [--heatmap-label:4rem] sm:[--heatmap-label:5rem]"
+                                    style={{ gridTemplateColumns: HEATMAP_GRID_TEMPLATE }}
+                                >
+                                    <div
+                                        className="text-xs font-medium text-foreground text-right pr-2 truncate"
+                                        title={gateItem.gate}
+                                    >
+                                        {gateItem.gate}
                                     </div>
-                                    {g.timeDistribution?.map((val, idx) => {
-                                        const intensity = val / (heatmapData.maxVal || 1);
+                                    {gateItem.timeDistribution.map((val, idx) => {
+                                        const intensity = Math.sqrt(val / heatmapData.maxVal)
+                                        const opacity = val === 0 ? 0 : 0.12 + intensity * 0.88
+                                        const backgroundColor =
+                                            val === 0
+                                                ? "transparent"
+                                                : `hsla(187, 96%, 42%, ${opacity})`
+                                        const textClassName =
+                                            val === 0
+                                                ? "text-muted-foreground/70"
+                                                : "text-white/90 drop-shadow-sm"
+
                                         return (
                                             <div
                                                 key={idx}
-                                                className="flex-1 h-8 rounded-sm transition-all hover:scale-110 hover:z-10 relative"
+                                                className="h-7 rounded-[2px] border border-border/30 transition-transform hover:scale-105 hover:z-10 relative sm:h-8"
                                                 style={{
-                                                    backgroundColor: `hsla(187, 96%, 42%, ${Math.max(0.12, intensity)})`,
+                                                    backgroundColor,
                                                 }}
-                                                title={`${val} vuelos a las ${idx}:00`}
+                                                title={`${val} vuelos a las ${String(idx).padStart(2, "0")}:00`}
+                                                onMouseEnter={() =>
+                                                    setHoveredCell({
+                                                        gate: gateItem.gate,
+                                                        hour: idx,
+                                                        value: val,
+                                                    })
+                                                }
                                             >
-                                                {val > 0 && intensity > 0.45 && (
-                                                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-md">
-                                                        {val}
-                                                    </span>
-                                                )}
+                                                <span
+                                                    className={`absolute inset-0 flex items-center justify-center text-[8px] font-semibold sm:text-[9px] ${textClassName}`}
+                                                >
+                                                    {val}
+                                                </span>
                                             </div>
                                         )
                                     })}
                                 </div>
                             ))}
 
-                            <div className="mt-4 flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                                <span>Menos uso</span>
-                                <div className="h-2 w-16 rounded" style={{ background: 'linear-gradient(to right, hsla(187, 96%, 42%, 0.1), hsla(187, 96%, 42%, 1))' }}></div>
-                                <span>Más uso</span>
+                            <div className="mt-3 flex items-center justify-end gap-2 text-xs text-muted-foreground">
+                                <span>Menos vuelos</span>
+                                <div
+                                    className="h-2 w-20 rounded"
+                                    style={{
+                                        background:
+                                            "linear-gradient(to right, hsla(187, 96%, 42%, 0.06), hsla(187, 96%, 42%, 1))",
+                                    }}
+                                ></div>
+                                <span>Más vuelos</span>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="h-[320px] sm:h-[380px] w-full">
+                    <div className="h-[280px] sm:h-[380px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 layout="vertical"
@@ -274,13 +333,17 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                                             ? ["dataMin - 10", "dataMax + 10"]
                                             : [0, "dataMax + 10"]
                                     }
-                                    tickFormatter={(value) =>
-                                        viewMode === "ontime"
-                                            ? `${value}%`
-                                            : viewMode === "delay"
-                                                ? `${value} min`
-                                                : String(value)
-                                    }
+                                    tickFormatter={(value) => {
+                                        const numericValue =
+                                            typeof value === "number" ? value : Number(value)
+                                        if (viewMode === "ontime") {
+                                            return `${formatNumber(numericValue, 1)}%`
+                                        }
+                                        if (viewMode === "delay") {
+                                            return `${formatNumber(numericValue, 1)} min`
+                                        }
+                                        return formatNumber(numericValue, 0)
+                                    }}
                                 />
 
                                 <YAxis
@@ -412,7 +475,6 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                         {viewMode === "concurrency" && (
                             <span>Intensidad de color indica mayor cantidad de vuelos en ese horario</span>
                         )}
-                        {/* ... other legends ... already handled somewhat above or default */}
                     </div>
                     <p className="text-xs font-mono text-muted-foreground/70">
                         {viewMode === "concurrency"

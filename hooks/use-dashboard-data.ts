@@ -6,6 +6,7 @@ import type {
   BucketDistribution,
   DailyStatus,
   DashboardData,
+  GateMetrics,
   HeadlineData,
   ManifestResponse,
   TopRecord,
@@ -22,18 +23,22 @@ type ExportPayload<T> = {
 }
 
 async function fetchExport<T>(url: string): Promise<T[]> {
-  const response = await fetch(url)
+  const response = await fetch(url, { cache: "no-store" })
   if (!response.ok) {
     throw new Error(`Failed to fetch export: ${response.status}`)
   }
-  const payload: ExportPayload<T> = await response.json()
+  const payload: ExportPayload<T> | T[] = await response.json()
+  if (Array.isArray(payload)) {
+    return payload
+  }
   return payload.data ?? []
 }
 
 async function fetchManifest(): Promise<ManifestResponse> {
-  const response = await fetch("/api/manifest")
+  // En GH Pages buscaremos el JSON estático generado en el build por sync-data.ts
+  const response = await fetch("/data/manifest.json", { cache: "no-store" })
   if (!response.ok) {
-    throw new Error(`Failed to fetch manifest: ${response.status}`)
+    throw new Error("Failed to fetch manifest. Did you run npm run sync-data?")
   }
   return response.json()
 }
@@ -54,7 +59,7 @@ export function useDashboardData() {
         const manifest = await fetchManifest()
         const urls = manifest.urls
 
-        const [headlineRows, airlines, tops, buckets, dailyStatus, routes] =
+        const [headlineRows, airlines, tops, buckets, dailyStatus, routes, gates] =
           await Promise.all([
             fetchExport<HeadlineData>(urls.headline),
             fetchExport<AirlineBreakdown>(urls.airline_breakdown),
@@ -62,6 +67,9 @@ export function useDashboardData() {
             fetchExport<BucketDistribution>(urls.bucket_distribution),
             fetchExport<DailyStatus>(urls.daily_status),
             fetchExport<RouteMetric>(urls.routes_metrics),
+            urls.gates_analysis
+              ? fetchExport<GateMetrics>(urls.gates_analysis).catch(() => [])
+              : Promise.resolve([]),
           ])
 
         const headline = headlineRows[0] ?? {
@@ -82,6 +90,7 @@ export function useDashboardData() {
             buckets,
             dailyStatus,
             routes,
+            gates,
             generatedAt: manifest.generated_at,
             expiresAt: manifest.expires_at,
           })
