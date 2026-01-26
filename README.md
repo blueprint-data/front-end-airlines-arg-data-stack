@@ -2,14 +2,14 @@
 
 Un visor dinámico de métricas de aerolíneas en Argentina, diseñado para analizar puntualidad, demoras y tendencias del mercado aeronáutico.
 
-## 🚀 Características
+##  Características
 
 - **Visualizaciones Impactantes**: Gráficos de tendencias, distribución de vuelos (bucketing) y análisis de rankings.
 - **Grillas Dinámicas**: Exploración profunda de rutas y métricas por aerolínea.
 - **Análisis de Puertas (Gates)**: Optimización y puntualidad por cada gate del aeropuerto.
 - **Arquitectura Serverless**: Despliegue estático en GitHub Pages con actualización automática de datos.
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 - **Framework**: [Next.js](https://nextjs.org/) (App Router)
 - **Lenguaje**: TypeScript

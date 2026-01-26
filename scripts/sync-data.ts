@@ -1,5 +1,4 @@
 import { Storage } from "@google-cloud/storage";
-import { BigQuery } from "@google-cloud/bigquery";
 import fs from "node:fs";
 import path from "node:path";
 import dotenv from "dotenv";
@@ -24,7 +23,6 @@ async function sync() {
             const decoded = Buffer.from(trimmed, "base64").toString("utf-8");
             if (decoded.startsWith("{")) return JSON.parse(decoded);
         } catch (e) {
-            // No era base64 o falló el parse
         }
         return null;
     }
@@ -37,8 +35,6 @@ async function sync() {
     }
 
     const storage = new Storage({ projectId, credentials });
-    const bigquery = new BigQuery({ projectId, credentials });
-
     const dataDir = path.join(process.cwd(), "public", "data");
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
@@ -53,6 +49,15 @@ async function sync() {
         routes_metrics: "prod/exports/routes_metrics.json",
     };
 
+    // Autodetectar gates_analysis si no está en el mapa (mismo path que headline)
+    if (!objects.gates_analysis && objects.headline) {
+        const headlinePath = objects.headline;
+        const lastSlash = headlinePath.lastIndexOf("/");
+        objects.gates_analysis = lastSlash >= 0
+            ? `${headlinePath.slice(0, lastSlash + 1)}gates_analysis.json`
+            : "gates_analysis.json";
+    }
+
     console.log("Downloading files from GCS...");
     for (const [key, filePath] of Object.entries(objects)) {
         try {
@@ -60,93 +65,23 @@ async function sync() {
             await storage.bucket(bucketName).file(filePath).download({ destination });
             console.log(`✓ ${key} synced`);
         } catch (e) {
-            console.error(`Error syncing ${key}:`, e);
+            console.warn(`⚠ ${key} not found in bucket (tried ${filePath})`);
         }
     }
 
-    console.log("Fetching BigQuery Gates data...");
-    const bqQuery = `
-    SELECT 
-      gate,
-      COUNT(*) as total_flights,
-      ROUND(AVG(delay_minutes), 1) as avg_delay_minutes,
-      SUM(CASE WHEN delay_minutes > 0 THEN 1 ELSE 0 END) as delayed_flights,
-      SUM(CASE WHEN delay_minutes <= 0 THEN 1 ELSE 0 END) as on_time_flights,
-      ROUND(SAFE_DIVIDE(SUM(CASE WHEN delay_minutes <= 0 THEN 1 ELSE 0 END), COUNT(*)) * 100, 1) as on_time_percentage,
-      MAX(delay_minutes) as max_delay_minutes,
-      -- Hourly distribution
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 0) as h00,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 1) as h01,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 2) as h02,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 3) as h03,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 4) as h04,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 5) as h05,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 6) as h06,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 7) as h07,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 8) as h08,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 9) as h09,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 10) as h10,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 11) as h11,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 12) as h12,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 13) as h13,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 14) as h14,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 15) as h15,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 16) as h16,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 17) as h17,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 18) as h18,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 19) as h19,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 20) as h20,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 21) as h21,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 22) as h22,
-      COUNTIF(EXTRACT(HOUR FROM COALESCE(actual_timestamp, scheduled_timestamp)) = 23) as h23
-    FROM \`${projectId}.marts.flights_performance\`
-    WHERE gate IS NOT NULL AND gate != ''
-    GROUP BY gate
-    ORDER BY total_flights DESC
-    LIMIT 100
-  `;
-
-    try {
-        const [rows] = await bigquery.query(bqQuery);
-
-        // Transform rows to include time_distribution array
-        const formattedRows = rows.map((row: any) => {
-            const time_distribution = Array.from({ length: 24 }, (_, i) => {
-                const key = `h${i.toString().padStart(2, '0')}`;
-                return Number(row[key] || 0);
-            });
-
-            return {
-                gate: String(row.gate),
-                total_flights: Number(row.total_flights),
-                avg_delay_minutes: Number(row.avg_delay_minutes),
-                delayed_flights: Number(row.delayed_flights),
-                on_time_flights: Number(row.on_time_flights),
-                on_time_percentage: Number(row.on_time_percentage),
-                max_delay_minutes: Number(row.max_delay_minutes),
-                time_distribution
-            };
-        });
-
-        fs.writeFileSync(path.join(dataDir, "gates.json"), JSON.stringify(formattedRows));
-        console.log("✓ gates.json synced");
-    } catch (e) {
-        console.error("Error fetching BigQuery:", e);
+    // Seccion de Gates: el archivo que baja puede ser gates_analysis.json o gates.json
+    // El frontend busca manifest.urls.gates_analysis, asi que nos aseguramos que apunte al descargado
+    const manifestUrls: Record<string, string> = {};
+    for (const key of Object.keys(objects)) {
+        manifestUrls[key] = `/data/${key}.json`;
     }
 
     // Create manifest.json for the frontend
     const manifest = {
         generated_at: new Date().toISOString(),
-        urls: {
-            headline: "/data/headline.json",
-            airline_breakdown: "/data/airline_breakdown.json",
-            tops: "/data/tops.json",
-            bucket_distribution: "/data/bucket_distribution.json",
-            daily_status: "/data/daily_status.json",
-            routes_metrics: "/data/routes_metrics.json",
-            gates_analysis: "/data/gates.json"
-        }
+        urls: manifestUrls
     };
+
     fs.writeFileSync(path.join(dataDir, "manifest.json"), JSON.stringify(manifest));
     console.log("✓ manifest.json created");
 }
