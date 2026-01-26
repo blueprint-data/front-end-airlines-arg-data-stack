@@ -23,6 +23,7 @@ async function sync() {
             const decoded = Buffer.from(trimmed, "base64").toString("utf-8");
             if (decoded.startsWith("{")) return JSON.parse(decoded);
         } catch (e) {
+            // No era base64 o falló el parse
         }
         return null;
     }
@@ -73,7 +74,7 @@ async function sync() {
     // El frontend busca manifest.urls.gates_analysis, asi que nos aseguramos que apunte al descargado
     const manifestUrls: Record<string, string> = {};
     for (const key of Object.keys(objects)) {
-        manifestUrls[key] = `/data/${key}.json`;
+        manifestUrls[key] = `./data/${key}.json`;
     }
 
     // Create manifest.json for the frontend

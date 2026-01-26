@@ -36,11 +36,18 @@ async function fetchExport<T>(url: string): Promise<T[]> {
 
 async function fetchManifest(): Promise<ManifestResponse> {
   // En GH Pages buscaremos el JSON estático generado en el build por sync-data.ts
-  const response = await fetch("/data/manifest.json", { cache: "no-store" })
-  if (!response.ok) {
-    throw new Error("Failed to fetch manifest. Did you run npm run sync-data?")
+  const manifestPath = "./data/manifest.json"
+  try {
+    const response = await fetch(manifestPath, { cache: "no-store" })
+    if (!response.ok) {
+      console.error(`Failed to fetch manifest from ${manifestPath}: ${response.status} ${response.statusText}`)
+      throw new Error(`Failed to fetch manifest: ${response.status}`)
+    }
+    return response.json()
+  } catch (err) {
+    console.error("Error fetching manifest:", err)
+    throw err
   }
-  return response.json()
 }
 
 export function useDashboardData() {
