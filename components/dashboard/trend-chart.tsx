@@ -13,13 +13,16 @@ import {
   ReferenceLine,
 } from "recharts"
 import type { DailyStatus } from "@/lib/types"
-import { formatNumber } from "@/lib/format"
+import { formatNumber, formatDateForChart } from "@/lib/format"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface TrendChartProps {
   data: DailyStatus[]
 }
 
 export function TrendChart({ data }: TrendChartProps) {
+  const isMobile = useIsMobile()
+  
   const chartData = useMemo(() => {
     return [...data]
       .sort(
@@ -29,7 +32,7 @@ export function TrendChart({ data }: TrendChartProps) {
       .map((item) => {
         const date = new Date(item.flight_date)
         return {
-          date: date.toLocaleDateString("es-AR", { day: "2-digit", month: "short" }),
+          date: formatDateForChart(item.flight_date, isMobile),
           fullDate: date.toLocaleDateString("es-AR", {
             weekday: "short",
             day: "2-digit",
@@ -40,7 +43,7 @@ export function TrendChart({ data }: TrendChartProps) {
           timestamp: date.getTime(),
         }
       })
-  }, [data])
+  }, [data, isMobile])
 
   // Calculate dynamic Y axis domain based on actual data
   const yAxisConfig = useMemo(() => {
@@ -55,11 +58,19 @@ export function TrendChart({ data }: TrendChartProps) {
 
   // Show fewer ticks on X axis for readability
   const xAxisInterval = useMemo(() => {
+    if (isMobile) {
+      // For mobile: show maximum 4-5 labels
+      if (chartData.length <= 4) return 0
+      if (chartData.length <= 8) return 1
+      return Math.floor(chartData.length / 4)
+    }
+    
+    // Original logic for desktop
     if (chartData.length <= 10) return 0 // Show all
     if (chartData.length <= 20) return 1 // Every other
     if (chartData.length <= 40) return 3 // Every 4th
     return Math.floor(chartData.length / 10) // ~10 labels
-  }, [chartData.length])
+  }, [chartData.length, isMobile])
 
   if (data.length === 0) {
     return null
@@ -103,7 +114,12 @@ export function TrendChart({ data }: TrendChartProps) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              margin={{ 
+                top: 10, 
+                right: 10, 
+                left: -10, 
+                bottom: isMobile ? 50 : 20 
+              }}
             >
               <defs>
                 <linearGradient id="delayGradient" x1="0" y1="0" x2="0" y2="1">
@@ -121,11 +137,15 @@ export function TrendChart({ data }: TrendChartProps) {
 
               <XAxis
                 dataKey="date"
-                tick={{ fill: "hsl(240, 5%, 50%)", fontSize: 11 }}
+                tick={{ 
+                  fill: "hsl(240, 5%, 50%)", 
+                  fontSize: isMobile ? 9 : 11
+                }}
                 axisLine={{ stroke: "hsl(240, 5%, 20%)" }}
                 tickLine={false}
                 interval={xAxisInterval}
-                dy={8}
+                dy={isMobile ? 20 : 8}
+                height={isMobile ? 60 : 30}
               />
 
               <YAxis

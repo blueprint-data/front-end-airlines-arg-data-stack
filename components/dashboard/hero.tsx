@@ -13,7 +13,7 @@ export function Hero({ generatedAt, lookbackDays }: HeroProps) {
   const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-24">
+    <section className="relative overflow-hidden py-12 sm:py-16 md:py-24">
       {/* Futuristic grid background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
@@ -21,7 +21,7 @@ export function Hero({ generatedAt, lookbackDays }: HeroProps) {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       </div>
 
-      <div className="mx-auto max-w-4xl px-4 text-center">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -36,7 +36,7 @@ export function Hero({ generatedAt, lookbackDays }: HeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl text-balance"
+          className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl text-balance"
         >
           ¿Qué aerolínea rinde mejor para tu destino?
         </motion.h1>
@@ -45,7 +45,7 @@ export function Hero({ generatedAt, lookbackDays }: HeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl text-pretty"
+          className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg md:text-xl text-pretty"
         >
           Compará el desempeño real de aerolíneas en rutas desde Argentina.
           Datos transparentes basados en una ventana móvil de {windowLabel}.

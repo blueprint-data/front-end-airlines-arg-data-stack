@@ -10,6 +10,7 @@ export interface ManifestResponse {
     bucket_distribution: string
     daily_status: string
     routes_metrics: string
+    gates_analysis?: string
   }
 }
 
@@ -75,6 +76,18 @@ export interface DailyStatus {
   dbt_updated_at: string
 }
 
+// gates_analysis.json
+export interface GateMetrics {
+  gate: string
+  total_flights: number
+  avg_delay_minutes: number
+  delayed_flights: number
+  on_time_flights: number
+  on_time_percentage: number
+  max_delay_minutes: number
+  time_distribution: number[]
+}
+
 // Legacy types (keeping for backwards compatibility)
 export interface RouteMetric {
   origin_airport_code: string
@@ -116,6 +129,7 @@ export interface DashboardData {
   buckets: BucketDistribution[]
   dailyStatus: DailyStatus[]
   routes: RouteMetric[]
+  gates: GateMetrics[]
   generatedAt: string
   expiresAt: string
 }

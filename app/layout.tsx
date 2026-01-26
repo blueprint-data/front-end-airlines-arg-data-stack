@@ -16,11 +16,45 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
+const siteUrl = 'https://www.blueprintdata.xyz'
+const title = 'Blueprintdata'
+const description = 'Compara el desempeño real de aerolíneas en rutas específicas con datos transparentes y contextualizados.'
+const ogImage = '/og-image.png'
+
 export const metadata: Metadata = {
-  title: 'Blueprintdata',
-  description: 'Blueprintdata: Compara el desempeño real de aerolíneas en rutas específicas con datos transparentes y contextualizados',
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title,
+    description,
+    url: siteUrl,
+    siteName: title,
+    locale: 'es_AR',
+    type: 'website',
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: title,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@blueprintdata_',
+    creator: '@blueprintdata_',
+    title,
+    description,
+    images: [ogImage],
+  },
   icons: {
     icon: [
+      '/favicon.svg',
       {
         url: '/icon-light-32x32.png',
         media: '(prefers-color-scheme: light)',
@@ -35,6 +69,7 @@ export const metadata: Metadata = {
       },
     ],
     apple: '/apple-icon.png',
+    shortcut: '/favicon.svg',
   },
 }
 

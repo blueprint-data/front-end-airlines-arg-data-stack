@@ -26,6 +26,10 @@ next-env.d.ts
 
 # documentation (local only)
 DEPLOYPROD.md
+DEPLOY-GHPAGES.md
+
+# data (synced at build time)
+/public/data/
 
 # misc
 .DS_Store
