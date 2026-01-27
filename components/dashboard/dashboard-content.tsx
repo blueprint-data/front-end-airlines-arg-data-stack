@@ -277,6 +277,7 @@ export function DashboardContent() {
                         <BucketDistributionChart
                             buckets={filteredBuckets}
                             avgDelayMinutes={routeMetrics.avgDelayMinutes}
+                            lookbackDays={data.headline.lookback_days}
                         />
                         <AirlinesRanking data={filteredRoutes} />
                         <TopDestinationsTable data={topDestinations} />

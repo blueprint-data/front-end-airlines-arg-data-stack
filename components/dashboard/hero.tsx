@@ -22,7 +22,7 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
           className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-mono font-medium text-primary backdrop-blur-sm"
         >
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-          {dateLabel ? `ACTUALIZADO ${dateLabel}` : "DATOS EN VIVO"}
+          DATOS HISTÓRICOS - ÚLTIMOS {windowLabel}
         </motion.span>
 
         <motion.h1
