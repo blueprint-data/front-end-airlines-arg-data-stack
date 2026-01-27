@@ -12,7 +12,7 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
   const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
 
   return (
-    <section className="relative overflow-hidden py-12 sm:py-16">
+    <section className="relative overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16">
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
         <motion.span

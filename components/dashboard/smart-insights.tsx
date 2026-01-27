@@ -50,18 +50,13 @@ export const SmartInsights = memo(function SmartInsights({ topDelays, gates }: S
             viewport={{ once: true }}
             className="mx-auto max-w-5xl px-4 py-12"
         >
-            <div className="flex items-center gap-3 mb-8">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 ring-1 ring-primary/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                    <Zap className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-foreground">
-                        Cerebro de <span className="text-primary text-glow-primary">Operaciones</span>
-                    </h2>
-                    <p className="text-sm font-medium text-muted-foreground leading-relaxed mt-1">
-                        Insights clave detectados por nuestro motor de datos para que entiendas <span className="text-foreground/80">qué está pasando</span> ahora.
-                    </p>
-                </div>
+            <div className="flex flex-col gap-1 mb-8">
+                <h2 className="text-2xl font-bold text-foreground">
+                    Cerebro de <span className="text-primary text-glow-primary">Operaciones</span>
+                </h2>
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                    Insights clave detectados por nuestro motor de datos para que entiendas <span className="text-foreground/80">qué está pasando</span> ahora.
+                </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
