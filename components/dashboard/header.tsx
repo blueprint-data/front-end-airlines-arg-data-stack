@@ -30,7 +30,7 @@ export const Header = memo(function Header() {
             <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-3 sm:px-4">
                 <Link href="/" className="mr-4 flex items-center space-x-2 sm:mr-6 hover:opacity-80 transition-opacity">
                     <Image
-                        src="/blue-logo.svg"
+                        src={process.env.NODE_ENV === 'production' ? '/front-end-airlines-arg-data-stack/blue-logo.svg' : '/blue-logo.svg'}
                         alt="Blueprintdata Logo"
                         width={32}
                         height={32}
