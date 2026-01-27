@@ -53,13 +53,16 @@ const BUCKET_CONFIG: Record<string, { label: string, icon: any, color: string, r
 interface BucketDistributionProps {
   buckets: BucketDistribution[]
   avgDelayMinutes: number
+  lookbackDays?: number
 }
 
 export const BucketDistributionChart = memo(function BucketDistributionChart({
   buckets,
-  avgDelayMinutes
+  avgDelayMinutes,
+  lookbackDays
 }: BucketDistributionProps) {
   const total = buckets.reduce((acc: number, bucket: BucketDistribution) => acc + (bucket.total_flights || 0), 0)
+  const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
 
   if (buckets.length === 0 || total === 0) {
     return (
@@ -96,13 +99,13 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
             <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-primary/20 ring-1 ring-primary/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
               <Plane className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-primary" />
             </div>
-            <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Monitor Operativo en Vivo</span>
+            <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Monitor Operativo Histórico</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground text-balance">
             Estado de la <br /><span className="text-primary text-glow-primary">Operación</span>
           </h2>
           <p className="mt-4 lg:mt-6 text-sm lg:text-base text-muted-foreground font-medium max-w-md leading-relaxed">
-            Mirá cómo viene la puntualidad y las demoras hoy. <span className="text-foreground/80">Chequeá los datos</span> según los filtros que elijas arriba.
+            Mirá cómo viene la puntualidad y las demoras en los últimos {windowLabel}. <span className="text-foreground/80">Chequeá los datos</span> según los filtros que elijas arriba.
           </p>
         </div>
 
@@ -191,7 +194,7 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
 
       {/* Composition Timeline Bar */}
       <div className="mt-10 group relative p-1 rounded-full bg-black/20 border border-white/5 backdrop-blur-md">
-        <div className="relative h-4 sm:h-6 w-full rounded-full overflow-hidden flex shadow-2xl">
+        <div className="relative h-2 sm:h-3 w-full rounded-full overflow-hidden flex shadow-2xl">
           {sortedBuckets.map((bucket) => {
             const percentage = (bucket.total_flights / total) * 100
             const config = BUCKET_CONFIG[bucket.bucket] || BUCKET_CONFIG.on_time_or_early
