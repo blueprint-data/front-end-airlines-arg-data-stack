@@ -15,11 +15,11 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
-const siteUrl = 'https://www.blueprintdata.xyz'
-const title = 'Puntualidad de Aerolíneas Argentina | Blueprintdata'
+const siteUrl = 'https://blueprint-data.github.io/front-end-airlines-arg-data-stack'
+const title = 'Blueprintdata Aeropuertos'
 const description = 'Monitor de puntualidad y demoras de aerolíneas en Argentina. Datos en tiempo real sobre cancelaciones y retrasos promedio por ruta y gate.'
 const basePath = process.env.NODE_ENV === 'production' ? '/front-end-airlines-arg-data-stack' : ''
-const ogImage = `${basePath}/og-image.png`
+const ogImage = '/og-image.png'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
