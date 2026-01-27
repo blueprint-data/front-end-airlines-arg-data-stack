@@ -7,7 +7,7 @@ export function Header() {
             <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-3 sm:px-4">
                 <Link href="/" className="mr-4 flex items-center space-x-2 sm:mr-6">
                     <Image
-                        src="/blue-logo.svg"
+                        src="./blue-logo.svg"
                         alt="Blueprintdata Logo"
                         width={32}
                         height={32}
@@ -19,12 +19,14 @@ export function Header() {
                 </Link>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
                     <nav className="flex items-center">
-                        <Link
-                            href="/blog"
+                        <a
+                            href="https://blueprintdata.xyz/blog"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                         >
                             Blog
-                        </Link>
+                        </a>
                     </nav>
                 </div>
             </div>
