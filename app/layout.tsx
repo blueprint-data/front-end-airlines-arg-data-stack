@@ -16,14 +16,15 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 const siteUrl = 'https://www.blueprintdata.xyz'
-const title = 'Blueprintdata'
-const description = 'Compara el desempeño real de aerolíneas en rutas específicas con datos transparentes y contextualizados.'
+const title = 'Puntualidad de Aerolíneas Argentina | Blueprintdata'
+const description = 'Monitor de puntualidad y demoras de aerolíneas en Argentina. Datos en tiempo real sobre cancelaciones y retrasos promedio por ruta y gate.'
 const ogImage = '/og-image.png'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,
   description,
+  keywords: ["aerolíneas argentina", "puntualidad vuelos", "demoras aeropuertos", "retrasos aerolíneas", "blueprintdata", "aeropuertos argentina", "estado de vuelos"],
   alternates: {
     canonical: '/',
   },
@@ -52,22 +53,8 @@ export const metadata: Metadata = {
     images: [ogImage],
   },
   icons: {
-    icon: [
-      '/favicon.svg',
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
     shortcut: '/favicon.svg',
   },
 }

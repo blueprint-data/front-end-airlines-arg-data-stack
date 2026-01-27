@@ -1,6 +1,4 @@
-"use client"
-
-import { useMemo } from "react"
+import { useMemo, memo } from "react"
 import { motion } from "framer-motion"
 import {
   AreaChart,
@@ -20,9 +18,9 @@ interface TrendChartProps {
   data: DailyStatus[]
 }
 
-export function TrendChart({ data }: TrendChartProps) {
+export const TrendChart = memo(function TrendChart({ data }: TrendChartProps) {
   const isMobile = useIsMobile()
-  
+
   const chartData = useMemo(() => {
     return [...data]
       .sort(
@@ -64,7 +62,7 @@ export function TrendChart({ data }: TrendChartProps) {
       if (chartData.length <= 8) return 1
       return Math.floor(chartData.length / 4)
     }
-    
+
     // Original logic for desktop
     if (chartData.length <= 10) return 0 // Show all
     if (chartData.length <= 20) return 1 // Every other
@@ -84,29 +82,34 @@ export function TrendChart({ data }: TrendChartProps) {
       className="mx-auto max-w-5xl px-4 py-8"
     >
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-foreground text-balance">
-          Tendencia de demoras
+        <h2 className="text-2xl font-bold text-foreground">
+          Tendencia de <span className="text-primary text-glow-primary">Demoras</span>
         </h2>
-        <p className="mt-1 text-sm font-mono text-muted-foreground">
-          Evolución diaria del promedio de demoras en minutos
+        <p className="mt-1 text-sm font-medium text-muted-foreground leading-relaxed">
+          Evolución del tiempo de espera promedio día tras día. <span className="text-foreground/80">Mirá cómo cambia</span> la puntualidad.
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card/50 p-4 sm:p-6 backdrop-blur-sm">
+      <div className="rounded-[2.5rem] border border-white/5 bg-card/10 p-6 sm:p-8 backdrop-blur-3xl shadow-2xl">
         {/* Stats summary */}
-        <div className="mb-4 flex flex-wrap gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-primary" />
-            <span className="text-muted-foreground">Promedio del período:</span>
-            <span className="font-mono font-semibold text-foreground">
-              {formatNumber(yAxisConfig.avg, 1)} min
-            </span>
+        <div className="mb-8 grid grid-cols-2 sm:flex sm:items-center gap-4 sm:gap-8">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Promedio Operacional</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-primary font-mono tracking-tighter">
+                {formatNumber(yAxisConfig.avg, 1)}
+              </span>
+              <span className="text-[10px] font-bold text-primary/60 uppercase">min</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Días analizados:</span>
-            <span className="font-mono font-semibold text-foreground">
-              {chartData.length}
-            </span>
+          <div className="flex flex-col gap-1 sm:pl-8 sm:border-l sm:border-white/5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Días Medidos</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-foreground font-mono tracking-tighter">
+                {chartData.length}
+              </span>
+              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">días</span>
+            </div>
           </div>
         </div>
 
@@ -114,34 +117,35 @@ export function TrendChart({ data }: TrendChartProps) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ 
-                top: 10, 
-                right: 10, 
-                left: -10, 
-                bottom: isMobile ? 50 : 20 
+              margin={{
+                top: 10,
+                right: 10,
+                left: -10,
+                bottom: isMobile ? 50 : 20
               }}
             >
               <defs>
                 <linearGradient id="delayGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(187, 96%, 42%)" stopOpacity={0.3} />
-                  <stop offset="50%" stopColor="hsl(187, 96%, 42%)" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="hsl(187, 96%, 42%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(187, 96%, 42%)" stopOpacity={0.4} />
+                  <stop offset="30%" stopColor="hsl(187, 96%, 42%)" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="hsl(187, 96%, 42%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
 
               <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(240, 5%, 20%)"
+                strokeDasharray="4 4"
+                stroke="hsl(240, 5%, 15%)"
                 vertical={false}
               />
 
               <XAxis
                 dataKey="date"
-                tick={{ 
-                  fill: "hsl(240, 5%, 50%)", 
-                  fontSize: isMobile ? 9 : 11
+                tick={{
+                  fill: "hsl(240, 5%, 40%)",
+                  fontSize: isMobile ? 9 : 11,
+                  fontWeight: 500
                 }}
-                axisLine={{ stroke: "hsl(240, 5%, 20%)" }}
+                axisLine={{ stroke: "hsl(240, 5%, 15%)" }}
                 tickLine={false}
                 interval={xAxisInterval}
                 dy={isMobile ? 20 : 8}
@@ -150,11 +154,11 @@ export function TrendChart({ data }: TrendChartProps) {
 
               <YAxis
                 domain={[yAxisConfig.min, yAxisConfig.max]}
-                tickFormatter={(value) => `${value}`}
-                tick={{ fill: "hsl(240, 5%, 50%)", fontSize: 11 }}
+                tickFormatter={(value) => `${value} min`}
+                tick={{ fill: "hsl(240, 5%, 40%)", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                width={35}
+                width={50}
                 tickCount={5}
               />
 
@@ -162,33 +166,40 @@ export function TrendChart({ data }: TrendChartProps) {
               <ReferenceLine
                 y={yAxisConfig.avg}
                 stroke="hsl(187, 96%, 42%)"
-                strokeDasharray="5 5"
-                strokeOpacity={0.5}
+                strokeDasharray="4 4"
+                strokeOpacity={0.6}
+                label={{
+                  value: 'PROMEDIO',
+                  position: 'right',
+                  fill: 'hsl(187, 96%, 42%)',
+                  fontSize: 10,
+                  fontWeight: 700
+                }}
               />
 
               <Tooltip
-                cursor={{ stroke: "hsl(187, 96%, 42%)", strokeOpacity: 0.3, strokeWidth: 1 }}
+                cursor={{ stroke: "hsl(187, 96%, 42%)", strokeOpacity: 0.4, strokeWidth: 1.5, strokeDasharray: "4 4" }}
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null
                   const item = payload[0].payload
                   return (
-                    <div className="rounded-lg border border-primary/30 bg-card px-4 py-3 shadow-xl shadow-black/20 backdrop-blur-md">
-                      <p className="font-semibold text-foreground capitalize">
+                    <div className="rounded-xl border border-primary/20 bg-card/90 px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur-xl ring-1 ring-white/10">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         {item.fullDate}
                       </p>
-                      <div className="mt-2 space-y-1">
-                        <p className="flex items-center justify-between gap-4 text-sm">
-                          <span className="text-muted-foreground">Demora promedio</span>
-                          <span className="font-mono font-semibold text-primary">
-                            {formatNumber(item.avgDelay, 1)} min
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center justify-between gap-6">
+                          <span className="text-sm text-foreground/80">Demora promedio</span>
+                          <span className="font-mono text-base font-bold text-primary">
+                            {formatNumber(item.avgDelay, 1)} <span className="text-[10px] font-normal opacity-70">min</span>
                           </span>
-                        </p>
-                        <p className="flex items-center justify-between gap-4 text-sm">
-                          <span className="text-muted-foreground">Total vuelos</span>
-                          <span className="font-mono text-foreground">
+                        </div>
+                        <div className="flex items-center justify-between gap-6 pt-1 border-t border-white/5">
+                          <span className="text-sm text-foreground/80">Total vuelos</span>
+                          <span className="font-mono text-sm font-semibold text-foreground">
                             {formatNumber(item.totalFlights)}
                           </span>
-                        </p>
+                        </div>
                       </div>
                     </div>
                   )
@@ -217,22 +228,24 @@ export function TrendChart({ data }: TrendChartProps) {
         </div>
 
         {/* Legend / footer */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-4">
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <span className="inline-block h-0.5 w-4 bg-primary" />
-              <span>Demora diaria</span>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/5 pt-6">
+          <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-1.5 w-4 rounded-full bg-primary shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+              <span>Demora Diaria</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="inline-block h-0.5 w-4 border-t-2 border-dashed border-primary/50" />
-              <span>Promedio</span>
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-0 w-4 border-t border-dashed border-primary" />
+              <span>Valor Promedio</span>
             </div>
           </div>
-          <p className="text-xs font-mono text-muted-foreground/70">
-            Valores en minutos
+          <p className="text-[10px] font-mono font-medium text-muted-foreground/30 uppercase tracking-[0.2em]">
+            Valores expresados en minutos
           </p>
         </div>
       </div>
     </motion.section>
   )
-}
+})
+
+TrendChart.displayName = "TrendChart"

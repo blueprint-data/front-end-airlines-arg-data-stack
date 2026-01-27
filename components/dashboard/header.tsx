@@ -1,35 +1,60 @@
+import { memo, useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
 
-export function Header() {
+export const Header = memo(function Header() {
+    const [isScrolled, setIsScrolled] = useState(false)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20)
+        }
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <motion.header
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className={cn(
+                "fixed top-0 z-50 w-full transition-all duration-700",
+                isScrolled
+                    ? "border-b border-white/5 bg-background/40 backdrop-blur-xl py-0 shadow-2xl shadow-black/50"
+                    : "bg-gradient-to-b from-black/40 to-transparent border-transparent py-3"
+            )}
+        >
             <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-3 sm:px-4">
-                <Link href="/" className="mr-4 flex items-center space-x-2 sm:mr-6">
+                <Link href="/" className="mr-4 flex items-center space-x-2 sm:mr-6 hover:opacity-80 transition-opacity">
                     <Image
-                        src="./blue-logo.svg"
+                        src="/blue-logo.svg"
                         alt="Blueprintdata Logo"
                         width={32}
                         height={32}
                         className="h-8 w-8"
                     />
-                    <span className="hidden font-bold sm:inline-block">
+                    <span className="hidden font-bold sm:inline-block bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                         Blueprintdata
                     </span>
                 </Link>
                 <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-                    <nav className="flex items-center">
+                    <nav className="flex items-center gap-4">
                         <a
                             href="https://blueprintdata.xyz/blog"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            className="text-sm font-medium text-muted-foreground transition-all hover:text-foreground hover:scale-105 active:scale-95"
                         >
                             Blog
                         </a>
                     </nav>
                 </div>
             </div>
-        </header>
+        </motion.header>
     )
-}
+})
+
+Header.displayName = "Header"

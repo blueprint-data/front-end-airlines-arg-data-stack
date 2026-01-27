@@ -1,24 +1,39 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Hero } from "@/components/dashboard/hero"
 import { Header } from "@/components/dashboard/header"
 import { Filters } from "@/components/dashboard/filters"
-import { KPICards } from "@/components/dashboard/kpi-cards"
-import { AirlinesRanking } from "@/components/dashboard/airlines-ranking"
-import { TopDestinationsTable } from "@/components/dashboard/routes-table"
-import { TrendChart } from "@/components/dashboard/trend-chart"
-import { GatesAnalysis } from "@/components/dashboard/gates-analysis"
-import { TopEvents } from "@/components/dashboard/top-events"
-import { BucketDistributionChart } from "@/components/dashboard/bucket-distribution"
 import { Footer } from "@/components/dashboard/footer"
+import { ChartSkeleton, KPISkeleton, TableSkeleton, Skeleton } from "@/components/dashboard/dashboard-skeleton"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
 import {
     getTopDestinationsFromRoutes,
     getTopDelays,
 } from "@/lib/dashboard-utils"
 import { aggregateRoutes, filterRoutes } from "@/lib/route-utils"
+import { asset } from "@/lib/utils"
+
+const AirlinesRanking = dynamic(() => import("@/components/dashboard/airlines-ranking").then(mod => mod.AirlinesRanking), {
+    loading: () => <ChartSkeleton />
+})
+const TopDestinationsTable = dynamic(() => import("@/components/dashboard/routes-table").then(mod => mod.TopDestinationsTable), {
+    loading: () => <TableSkeleton />
+})
+const TrendChart = dynamic(() => import("@/components/dashboard/trend-chart").then(mod => mod.TrendChart), {
+    loading: () => <ChartSkeleton />
+})
+const GatesAnalysis = dynamic(() => import("@/components/dashboard/gates-analysis").then(mod => mod.GatesAnalysis), {
+    loading: () => <ChartSkeleton />
+})
+const SmartInsights = dynamic(() => import("@/components/dashboard/smart-insights").then(mod => mod.SmartInsights), {
+    loading: () => <TableSkeleton />
+})
+const BucketDistributionChart = dynamic(() => import("@/components/dashboard/bucket-distribution").then(mod => mod.BucketDistributionChart), {
+    loading: () => <ChartSkeleton />
+})
 
 interface FilterState {
     origin: string
@@ -34,11 +49,9 @@ export function DashboardContent() {
     const searchParams = useSearchParams()
     const { data, loading, error } = useDashboardData()
 
-    // Track if this is initial mount to avoid URL sync on first render
     const isInitialMount = useRef(true)
     const hasSetDefaultOrigin = useRef(false)
 
-    // Initialize local state from URL
     const [filters, setFilters] = useState<FilterState>(() => ({
         origin: searchParams.get("origin") || "",
         country: searchParams.get("country") || "",
@@ -47,9 +60,7 @@ export function DashboardContent() {
         windowDays: searchParams.get("windowDays") || "60",
     }))
 
-    // Sync filters to URL via useEffect (runs AFTER render, not during)
     useEffect(() => {
-        // Skip initial mount to avoid unnecessary URL update
         if (isInitialMount.current) {
             isInitialMount.current = false
             return
@@ -70,22 +81,20 @@ export function DashboardContent() {
         })
     }, [filters, router, pathname])
 
-    // Single update function that handles all filter changes atomically
     const updateFilters = useCallback((updates: Partial<FilterState>) => {
         setFilters(prev => ({ ...prev, ...updates }))
     }, [])
 
-    // Set default origin only when there's a single option
     useEffect(() => {
         if (!hasSetDefaultOrigin.current && !filters.origin && data?.routes?.length) {
-            const origins = new Set(
+            const originsList = new Set(
                 data.routes
                     .map((route) => route.origin_airport_code)
                     .filter((origin): origin is string => Boolean(origin))
             )
 
-            if (origins.size === 1) {
-                const [onlyOrigin] = origins
+            if (originsList.size === 1) {
+                const [onlyOrigin] = Array.from(originsList)
                 if (onlyOrigin) {
                     // eslint-disable-next-line react-hooks/set-state-in-effect
                     setFilters(prev => ({ ...prev, origin: onlyOrigin }))
@@ -96,7 +105,6 @@ export function DashboardContent() {
         }
     }, [data?.routes, filters.origin])
 
-    // Update windowDays from data (only if user hasn't manually set it)
     useEffect(() => {
         if (data?.headline?.lookback_days) {
             const days = String(data.headline.lookback_days)
@@ -107,17 +115,15 @@ export function DashboardContent() {
         }
     }, [data?.headline?.lookback_days, searchParams, filters.windowDays])
 
-    // Memoized filtered data
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const filteredRoutes = useMemo(() => {
-        if (!data?.routes?.length) return []
+        if (!data?.routes) return []
         return filterRoutes(data.routes, {
             origin: filters.origin || undefined,
             country: filters.country || undefined,
             city: filters.city || undefined,
             airline: filters.airline || undefined,
         })
-    }, [data?.routes, filters.origin, filters.country, filters.city, filters.airline])
+    }, [data, filters.origin, filters.country, filters.city, filters.airline])
 
     const routeMetrics = useMemo(
         () => aggregateRoutes(filteredRoutes),
@@ -139,94 +145,157 @@ export function DashboardContent() {
         })
     }, [data, filters.origin, filters.country, filters.city])
 
+    const filteredBuckets = useMemo(() => {
+        if (!data) return []
+
+        const { totalOnTime, totalCancelled, totalDelayed } = routeMetrics
+
+        if (filters.airline) {
+            const airlineData = data.airlines.find(a => a.airline_name === filters.airline)
+            if (airlineData) {
+                return [
+                    { bucket: "on_time_or_early", total_flights: airlineData.on_time_or_early },
+                    { bucket: "delay_15_0", total_flights: airlineData.delay_15_0 },
+                    { bucket: "delay_30_15", total_flights: airlineData.delay_30_15 },
+                    { bucket: "delay_45_30", total_flights: airlineData.delay_45_30 },
+                    { bucket: "delay_over_45", total_flights: airlineData.delay_over_45 },
+                    { bucket: "cancelled", total_flights: airlineData.cancelled_flights },
+                ]
+            }
+        }
+
+        const globalBuckets = data.buckets
+        const globalDelayedTotal = globalBuckets
+            .filter(b => b.bucket.includes("delay_"))
+            .reduce((sum, b) => sum + b.total_flights, 0)
+
+        return [
+            { bucket: "on_time_or_early", total_flights: totalOnTime },
+            ...globalBuckets
+                .filter(b => b.bucket.includes("delay_"))
+                .map(b => ({
+                    bucket: b.bucket,
+                    total_flights: globalDelayedTotal > 0
+                        ? Math.round((b.total_flights / globalDelayedTotal) * totalDelayed)
+                        : 0
+                })),
+            { bucket: "cancelled", total_flights: totalCancelled },
+        ]
+    }, [data, filters.airline, routeMetrics])
+
+    const handleSetOrigin = useCallback((val: string) => {
+        updateFilters({
+            origin: val,
+            country: "",
+            city: "",
+            airline: "",
+        })
+    }, [updateFilters])
+
+    const handleSetCountry = useCallback((val: string) => {
+        updateFilters({
+            country: val,
+            city: "",
+            airline: "",
+        })
+    }, [updateFilters])
+
+    const handleSetCity = useCallback((val: string) => {
+        updateFilters({
+            city: val,
+            airline: "",
+        })
+    }, [updateFilters])
+
+    const handleSetAirline = useCallback((val: string) => {
+        updateFilters({ airline: val })
+    }, [updateFilters])
+
+    const handleSetWindowDays = useCallback((val: string) => {
+        updateFilters({ windowDays: val })
+    }, [updateFilters])
+
     return (
         <main className="min-h-screen bg-background">
             <Header />
-            <Hero
-                generatedAt={data?.generatedAt}
-                lookbackDays={data?.headline.lookback_days}
-            />
 
             {loading ? (
-                <section className="mx-auto max-w-5xl px-4 py-16 text-center">
-                    <p className="text-sm font-mono text-muted-foreground">
-                        Cargando datos públicos…
-                    </p>
-                </section>
+                <div className="pt-20">
+                    <div className="mx-auto max-w-5xl px-4 py-8">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                    <KPISkeleton />
+                </div>
             ) : error ? (
-                <section className="mx-auto max-w-5xl px-4 py-16 text-center">
+                <section className="mx-auto max-w-5xl px-4 py-32 text-center">
                     <p className="text-sm font-mono text-red-400">
                         No pudimos cargar los datos. Intentá nuevamente en unos minutos.
                     </p>
                 </section>
             ) : data ? (
                 <>
-                    <Filters
-                        routes={data.routes}
-                        origin={filters.origin}
-                        setOrigin={(val) => {
-                            // Reset dependents atomically
-                            updateFilters({
-                                origin: val,
-                                country: "",
-                                city: "",
-                                airline: "",
-                            })
-                        }}
-                        country={filters.country}
-                        setCountry={(val) => {
-                            updateFilters({
-                                country: val,
-                                city: "",
-                                airline: "",
-                            })
-                        }}
-                        city={filters.city}
-                        setCity={(val) => {
-                            updateFilters({
-                                city: val,
-                                airline: "",
-                            })
-                        }}
-                        airline={filters.airline}
-                        setAirline={(val) => updateFilters({ airline: val })}
-                        windowDays={filters.windowDays}
-                        setWindowDays={(val) => updateFilters({ windowDays: val })}
-                    />
+                    <div className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden">
+                        <div className="absolute inset-0 z-0 overflow-hidden">
+                            <video
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="h-full w-full object-cover scale-105 brightness-[0.35] saturate-[0.7]"
+                            >
+                                <source
+                                    src={asset("/hero-video.mp4")}
+                                    type="video/mp4"
+                                />
+                            </video>
+                            <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background" />
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_70%)]" />
+                        </div>
 
-                    <KPICards
-                        totalFlights={routeMetrics.totalFlights}
-                        onTimePercentage={
-                            routeMetrics.totalFlights > 0
-                                ? (routeMetrics.totalOnTime / routeMetrics.totalFlights) * 100
-                                : 0
-                        }
-                        cancellationRate={
-                            routeMetrics.totalFlights > 0
-                                ? (routeMetrics.totalCancelled / routeMetrics.totalFlights) * 100
-                                : 0
-                        }
-                        avgDelayMinutes={routeMetrics.avgDelayMinutes}
-                    />
+                        <div className="relative z-10">
+                            <Hero
+                                generatedAt={data.generatedAt}
+                                lookbackDays={data.headline.lookback_days}
+                            />
+                            <Filters
+                                routes={data.routes}
+                                origin={filters.origin}
+                                setOrigin={handleSetOrigin}
+                                country={filters.country}
+                                setCountry={handleSetCountry}
+                                city={filters.city}
+                                setCity={handleSetCity}
+                                airline={filters.airline}
+                                setAirline={handleSetAirline}
+                                windowDays={filters.windowDays}
+                                setWindowDays={handleSetWindowDays}
+                            />
+                        </div>
+                    </div>
 
-                    <BucketDistributionChart buckets={data.buckets} />
-
-                    <AirlinesRanking data={filteredRoutes} />
-
-                    <TopDestinationsTable data={topDestinations} />
-
-                    <TopEvents topDelays={topDelays} />
-
-                    <TrendChart data={data.dailyStatus} />
-
-                    <GatesAnalysis gates={data.gates} />
-
-                    <Footer
-                        generatedAt={data.generatedAt}
-                        lookbackDays={data.headline.lookback_days}
-                    />
+                    <div className="space-y-12 sm:space-y-20 pb-20 mt-12 sm:mt-20">
+                        <BucketDistributionChart
+                            buckets={filteredBuckets}
+                            avgDelayMinutes={routeMetrics.avgDelayMinutes}
+                        />
+                        <AirlinesRanking data={filteredRoutes} />
+                        <TopDestinationsTable data={topDestinations} />
+                        <SmartInsights
+                            topDelays={topDelays}
+                            gates={data.gates}
+                        />
+                        <TrendChart data={data.dailyStatus} />
+                        <GatesAnalysis gates={data.gates} />
+                    </div>
                 </>
             ) : null}
+
+            {data && (
+                <Footer
+                    generatedAt={data.generatedAt}
+                    lookbackDays={data.headline.lookback_days}
+                />
+            )}
         </main>
     )
 }

@@ -1,6 +1,4 @@
-"use client"
-
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, memo } from "react"
 import { motion } from "framer-motion"
 import {
     BarChart,
@@ -14,6 +12,8 @@ import {
     ReferenceLine,
 } from "recharts"
 import { formatNumber } from "@/lib/format"
+import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface GateMetrics {
     gate: string
@@ -43,7 +43,8 @@ interface HeatmapData {
     }>
 }
 
-export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
+export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
+    const isMobile = useIsMobile()
     const [viewMode, setViewMode] = useState<ViewMode>("delay")
 
     const chartData = useMemo(() => {
@@ -133,10 +134,10 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-foreground text-balance">
-                        Análisis por Gate de Aterrizaje
+                        Uso de <span className="text-primary">Puertas</span> de Arribo
                     </h2>
-                    <p className="mt-1 text-sm font-mono text-muted-foreground">
-                        Performance operacional y concurrencia por puerta
+                    <p className="mt-1 text-sm font-medium text-muted-foreground leading-relaxed">
+                        Chequeá qué tan saturados están los gates y cómo viene el cumplimiento por puerta.
                     </p>
                 </div>
 
@@ -202,51 +203,84 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
 
                 {/* Chart Area */}
                 {viewMode === "concurrency" && heatmapData ? (
-                    <div className="w-full overflow-x-auto">
-                        <div className="min-w-[600px] space-y-2 sm:min-w-[650px] md:min-w-[700px] lg:min-w-[800px]">
-                            <div className="flex items-end gap-1 mb-2">
-                                <div className="w-20 text-xs font-medium text-muted-foreground text-right pr-2">
-                                    Hora
+                    <div className="relative mt-2">
+                        <div className="overflow-x-auto pb-4 pt-10 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+                            <div className="min-w-[800px]">
+                                {/* Timeline Header */}
+                                <div className="ml-24 mb-4 grid grid-cols-24 gap-1">
+                                    {heatmapData.hours.map((h) => (
+                                        <div key={h} className="group relative flex flex-col items-center">
+                                            <span className="text-[10px] font-bold font-mono text-muted-foreground/60 transition-colors group-hover:text-primary">
+                                                {h.toString().padStart(2, '0')}
+                                            </span>
+                                            <div className="mt-1 h-1.5 w-px bg-border/50 group-hover:bg-primary/50 transition-colors" />
+                                        </div>
+                                    ))}
                                 </div>
-                                {heatmapData.hours.map((h) => (
-                                    <div key={h} className="flex-1 text-center text-[10px] text-muted-foreground font-mono">
-                                        {h}h
-                                    </div>
-                                ))}
-                            </div>
 
-                            {heatmapData.gates.map((g) => (
-                                <div key={g.rawGate} className="flex items-center gap-1 group">
-                                    <div className="w-20 text-xs font-medium text-foreground text-right pr-2 truncate" title={g.gate}>
-                                        Gate {g.rawGate}
-                                    </div>
-                                    {g.timeDistribution?.map((val, idx) => {
-                                        const intensity = val / (heatmapData.maxVal || 1);
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className="flex-1 h-8 rounded-sm transition-all hover:scale-110 hover:z-10 relative"
-                                                style={{
-                                                    backgroundColor: `hsla(187, 96%, 42%, ${Math.max(0.12, intensity)})`,
-                                                }}
-                                                title={`${val} vuelos a las ${idx}:00`}
-                                            >
-                                                {val > 0 && intensity > 0.45 && (
-                                                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-md">
-                                                        {val}
-                                                    </span>
-                                                )}
+                                {/* Heatmap Rows */}
+                                <div className="space-y-1.5">
+                                    {heatmapData.gates.map((g) => (
+                                        <div key={g.rawGate} className="group flex items-center gap-3">
+                                            {/* Gate Label */}
+                                            <div className="flex w-24 flex-none items-center justify-end pr-3">
+                                                <span className="text-[11px] font-black uppercase tracking-tighter text-muted-foreground/80 group-hover:text-foreground transition-colors">
+                                                    GATE {g.rawGate}
+                                                </span>
                                             </div>
-                                        )
-                                    })}
-                                </div>
-                            ))}
 
-                            <div className="mt-4 flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                                <span>Menos uso</span>
-                                <div className="h-2 w-16 rounded" style={{ background: 'linear-gradient(to right, hsla(187, 96%, 42%, 0.1), hsla(187, 96%, 42%, 1))' }}></div>
-                                <span>Más uso</span>
+                                            {/* Hour Cells */}
+                                            <div className="grid flex-1 grid-cols-24 gap-1">
+                                                {g.timeDistribution?.map((val, idx) => {
+                                                    const intensity = val / (heatmapData.maxVal || 1);
+                                                    const isEmpty = val === 0;
+
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={cn(
+                                                                "group/cell relative h-10 rounded-sm transition-all duration-300",
+                                                                !isEmpty && "hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:z-20 hover:scale-[1.2] active:scale-[1.1] cursor-help"
+                                                            )}
+                                                            style={{
+                                                                backgroundColor: isEmpty
+                                                                    ? "rgba(255, 255, 255, 0.02)"
+                                                                    : `rgba(6, 182, 212, ${Math.max(0.1, intensity)})`,
+                                                                border: isEmpty
+                                                                    ? "1px solid rgba(255, 255, 255, 0.03)"
+                                                                    : "1px solid rgba(6, 182, 212, 0.3)"
+                                                            }}
+                                                        >
+                                                            {!isEmpty && (
+                                                                <>
+                                                                    {/* Center value - always visible with low opacity on mobile, full on hover/tap */}
+                                                                    <div className={cn(
+                                                                        "absolute inset-0 flex items-center justify-center transition-opacity bg-cyan-950/90 rounded-sm pointer-events-none z-10",
+                                                                        isMobile ? "opacity-40" : "opacity-0 group-hover/cell:opacity-100"
+                                                                    )}>
+                                                                        <span className="text-[11px] font-black text-white">
+                                                                            {val}
+                                                                        </span>
+                                                                    </div>
+                                                                    {/* Floating label - visible on hover or active (tap) */}
+                                                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-foreground text-background text-[10px] font-bold rounded-lg opacity-0 group-hover/cell:opacity-100 group-active/cell:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap z-30 shadow-2xl border border-white/10 scale-90 group-hover/cell:scale-100 group-active/cell:scale-100 origin-bottom">
+                                                                        {val} {val === 1 ? 'vuelo' : 'vuelos'} · {idx}:00h
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Mobile Overlay Hint */}
+                        <div className="md:hidden mt-2 flex items-center justify-center gap-2 text-[10px] font-mono text-muted-foreground animate-pulse">
+                            <span>← Desliza para ver cronograma completo →</span>
                         </div>
                     </div>
                 ) : (
@@ -301,30 +335,26 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                                 )}
 
                                 <Tooltip
-                                    cursor={{ fill: "hsl(187, 96%, 42%)", fillOpacity: 0.1 }}
+                                    cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
                                     content={({ active, payload }) => {
                                         if (!active || !payload?.length) return null
                                         const item = payload[0].payload
                                         return (
-                                            <div className="rounded-lg border border-primary/30 bg-card px-4 py-3 shadow-xl shadow-black/20 backdrop-blur-md">
-                                                <p className="font-semibold text-foreground">
+                                            <div className="rounded-xl border border-white/10 bg-card/90 px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur-xl ring-1 ring-white/10">
+                                                <p className="text-sm font-bold text-foreground">
                                                     Gate {item.rawGate}
                                                 </p>
-                                                <div className="mt-2 space-y-1.5">
-                                                    <p className="flex items-center justify-between gap-4 text-sm">
-                                                        <span className="text-muted-foreground">
-                                                            Total vuelos
-                                                        </span>
-                                                        <span className="font-mono font-semibold text-foreground">
+                                                <div className="mt-3 space-y-2 text-sm">
+                                                    <div className="flex items-center justify-between gap-6">
+                                                        <span className="text-muted-foreground whitespace-nowrap">Vuelos totales</span>
+                                                        <span className="font-mono font-bold text-foreground">
                                                             {formatNumber(item.totalFlights)}
                                                         </span>
-                                                    </p>
-                                                    <p className="flex items-center justify-between gap-4 text-sm">
-                                                        <span className="text-muted-foreground">
-                                                            Demora prom.
-                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between gap-6">
+                                                        <span className="text-muted-foreground whitespace-nowrap">Demora prom.</span>
                                                         <span
-                                                            className={`font-mono font-semibold ${item.avgDelay < 0
+                                                            className={`font-mono font-bold ${item.avgDelay < 0
                                                                 ? "text-green-500"
                                                                 : item.avgDelay > 15
                                                                     ? "text-amber-500"
@@ -332,15 +362,13 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                                                                 }`}
                                                         >
                                                             {item.avgDelay > 0 ? "+" : ""}
-                                                            {formatNumber(item.avgDelay, 1)} min
+                                                            {formatNumber(item.avgDelay, 1)} <span className="text-[10px] uppercase opacity-60">min</span>
                                                         </span>
-                                                    </p>
-                                                    <p className="flex items-center justify-between gap-4 text-sm">
-                                                        <span className="text-muted-foreground">
-                                                            Puntualidad
-                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between gap-6 pt-1 border-t border-white/5">
+                                                        <span className="text-muted-foreground whitespace-nowrap">Puntualidad</span>
                                                         <span
-                                                            className={`font-mono font-semibold ${item.onTimePercentage >= 70
+                                                            className={`font-mono font-bold ${item.onTimePercentage >= 70
                                                                 ? "text-green-500"
                                                                 : item.onTimePercentage >= 50
                                                                     ? "text-primary"
@@ -349,7 +377,7 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                                                         >
                                                             {formatNumber(item.onTimePercentage, 1)}%
                                                         </span>
-                                                    </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )
@@ -425,6 +453,8 @@ export function GatesAnalysis({ className, gates = [] }: GatesAnalysisProps) {
                     </p>
                 </div>
             </div>
-        </motion.section>
+        </motion.section >
     )
-}
+})
+
+GatesAnalysis.displayName = "GatesAnalysis"
