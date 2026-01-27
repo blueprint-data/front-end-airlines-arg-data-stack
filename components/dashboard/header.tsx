@@ -23,11 +23,11 @@ export const Header = memo(function Header() {
             className={cn(
                 "fixed top-0 z-50 w-full transition-all duration-700",
                 isScrolled
-                    ? "border-b border-white/5 bg-background/40 backdrop-blur-xl py-0 shadow-2xl shadow-black/50"
+                    ? "rounded-b-[32px] border-b border-white/5 bg-background/60 backdrop-blur-xl backdrop-saturate-150 shadow-[0_35px_60px_-25px_rgba(2,6,23,0.55)]"
                     : "bg-gradient-to-b from-black/40 to-transparent border-transparent py-3"
             )}
         >
-            <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-3 sm:px-4">
+        <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-4 sm:px-6 lg:px-8">
                 <Link href="/" className="mr-4 flex items-center space-x-2 sm:mr-6 hover:opacity-80 transition-opacity">
                     <Image
                         src={process.env.NODE_ENV === 'production' ? '/front-end-airlines-arg-data-stack/blue-logo.svg' : '/blue-logo.svg'}

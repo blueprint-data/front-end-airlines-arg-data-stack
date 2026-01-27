@@ -191,32 +191,34 @@ export const Filters = memo(function Filters({
                   </div>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-[85vh] rounded-t-[2rem] border-t-primary/20 px-6 pt-10">
-                <SheetHeader className="mb-8 p-0 text-left">
+              <SheetContent side="bottom" className="h-[90vh] max-h-[90vh] rounded-t-[2rem] border-t-primary/20 px-6 pt-6 flex flex-col">
+                <SheetHeader className="mb-6 p-0 text-left flex-shrink-0">
                   <SheetTitle className="text-2xl font-black">Filtros</SheetTitle>
                   <SheetDescription className="text-base">
                     Ajusta los parámetros para analizar rutas específicas.
                   </SheetDescription>
                 </SheetHeader>
 
-                <div className="flex-1 overflow-y-auto pb-20">
-                  <FilterForm
-                    origin={origin}
-                    setOrigin={setOrigin}
-                    country={country}
-                    setCountry={setCountry}
-                    city={city}
-                    setCity={setCity}
-                    airline={airline}
-                    setAirline={setAirline}
-                    origins={origins}
-                    countries={countries}
-                    cities={cities}
-                    airlines={airlines}
-                  />
+                <div className="flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-primary/30 [&::-webkit-scrollbar-thumb]:rounded-full mb-4">
+                  <div className="pr-2">
+                    <FilterForm
+                      origin={origin}
+                      setOrigin={setOrigin}
+                      country={country}
+                      setCountry={setCountry}
+                      city={city}
+                      setCity={setCity}
+                      airline={airline}
+                      setAirline={setAirline}
+                      origins={origins}
+                      countries={countries}
+                      cities={cities}
+                      airlines={airlines}
+                    />
+                  </div>
                 </div>
 
-                <div className="absolute bottom-10 left-6 right-6 flex flex-col gap-3">
+                <div className="flex flex-col gap-3 flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border/50 -mx-6 px-6 py-4 -mb-6">
                   <Button onClick={() => setIsOpen(false)} className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20">
                     Aplicar Filtros
                   </Button>
@@ -315,7 +317,7 @@ const FilterForm = ({
   cities,
   airlines
 }: FilterFormProps) => (
-  <div className={cn("grid gap-6", className)}>
+  <div className={cn("grid gap-6 [&>*]:min-w-0", className)}>
     {/* Origen */}
     <div className="space-y-2">
       <Label htmlFor="filter-origin" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -329,7 +331,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-origin"
           className={cn(
-            "h-12 transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm",
+            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             origin && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
@@ -359,7 +361,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-country"
           className={cn(
-            "h-12 transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm",
+            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             country && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
@@ -387,7 +389,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-city"
           className={cn(
-            "h-12 transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm",
+            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             city && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
@@ -415,10 +417,10 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-airline"
           className={cn(
-            "h-12 transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm",
+            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             airline && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
-        >
+      >
           <SelectValue placeholder="Todas las aerolíneas" />
         </SelectTrigger>
         <SelectContent>
@@ -457,7 +459,7 @@ const ActiveFiltersSummary = ({
 }: ActiveFiltersSummaryProps) => {
   if (!hasActiveFilters) return null
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
+    <div className="mt-4 grid grid-cols-2 gap-2 md:flex md:flex-wrap">
       <AnimatePresence mode="popLayout">
         {Boolean(origin) && (
           <motion.span
@@ -465,10 +467,10 @@ const ActiveFiltersSummary = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
+            className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
-            Origen: {origin}
-            <button onClick={() => setOrigin("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors">
+            <span className="truncate">Origen: {origin}</span>
+            <button onClick={() => setOrigin("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
               <X className="h-3 w-3" />
             </button>
           </motion.span>
@@ -479,10 +481,10 @@ const ActiveFiltersSummary = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
+            className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
-            País: {country}
-            <button onClick={() => setCountry("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors">
+            <span className="truncate">País: {country}</span>
+            <button onClick={() => setCountry("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
               <X className="h-3 w-3" />
             </button>
           </motion.span>
@@ -493,10 +495,10 @@ const ActiveFiltersSummary = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
+            className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
-            Ciudad: {city}
-            <button onClick={() => setCity("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors">
+            <span className="truncate">Ciudad: {city}</span>
+            <button onClick={() => setCity("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
               <X className="h-3 w-3" />
             </button>
           </motion.span>
@@ -507,10 +509,10 @@ const ActiveFiltersSummary = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
+            className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
-            Línea: {airline}
-            <button onClick={() => setAirline("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors">
+            <span className="truncate">Línea: {airline}</span>
+            <button onClick={() => setAirline("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
               <X className="h-3 w-3" />
             </button>
           </motion.span>
