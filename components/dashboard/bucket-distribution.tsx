@@ -193,7 +193,7 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
       </div>
 
       {/* Composition Timeline Bar */}
-      <div className="mt-10 group relative p-1 rounded-full bg-black/20 border border-white/5 backdrop-blur-md">
+      <div className="mt-10 group relative p-1 rounded-b-3xl bg-black/20 border border-white/5 backdrop-blur-md">
         <div className="relative h-2 sm:h-3 w-full rounded-full overflow-hidden flex shadow-2xl">
           {sortedBuckets.map((bucket) => {
             const percentage = (bucket.total_flights / total) * 100
