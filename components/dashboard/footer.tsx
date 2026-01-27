@@ -18,7 +18,7 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
       <div className="mx-auto max-w-5xl px-4 flex flex-col items-center gap-4">
         <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
           <Image
-            src="/blue-logo.svg"
+            src="./blue-logo.svg"
             alt="Blueprintdata Logo"
             width={24}
             height={24}
@@ -71,10 +71,20 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
             className="hover:text-primary transition-colors"
             aria-label="Sitio principal"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
               <Globe className="h-4 w-4" />
               blueprintdata.xyz
             </span>
+          </a>
+          <span className="text-muted-foreground/40">•</span>
+          <a
+            href="https://blueprintdata.xyz/blog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors"
+            aria-label="Blog"
+          >
+            Blog
           </a>
           <span className="text-muted-foreground/40">•</span>
           <a
@@ -82,7 +92,7 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
             className="hover:text-primary transition-colors"
             aria-label="Contacto"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
               <Mail className="h-4 w-4" />
               contact@blueprintdata.xyz
             </span>
