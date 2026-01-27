@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import Image from "next/image"
 import { formatDateShort } from "@/lib/format"
 import { Github, Linkedin, Globe, Mail, Plane } from "lucide-react"
@@ -9,13 +10,13 @@ interface FooterProps {
   lookbackDays?: number
 }
 
-export function Footer({ generatedAt, lookbackDays }: FooterProps) {
+export const Footer = memo(function Footer({ generatedAt, lookbackDays }: FooterProps) {
   const dateLabel = generatedAt ? formatDateShort(generatedAt) : ""
   const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
 
   return (
-    <footer className="border-t border-border/50 py-8">
-      <div className="mx-auto max-w-5xl px-4 flex flex-col items-center gap-4">
+    <footer className="border-t border-border/50 py-12">
+      <div className="mx-auto max-w-5xl px-4 flex flex-col items-center gap-6">
         <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
           <Image
             src="/blue-logo.svg"
@@ -27,12 +28,12 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
           <span className="font-bold text-foreground">Blueprintdata</span>
         </div>
 
-        <div className="flex items-center gap-4 text-muted-foreground">
+        <div className="flex items-center gap-6 text-muted-foreground">
           <a
             href="https://www.linkedin.com/company/bpdata/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-all hover:scale-110 active:scale-90"
             aria-label="LinkedIn"
           >
             <Linkedin className="h-5 w-5" />
@@ -41,7 +42,7 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
             href="https://github.com/blueprint-data"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-all hover:scale-110 active:scale-90"
             aria-label="GitHub"
           >
             <Github className="h-5 w-5" />
@@ -50,7 +51,7 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
             href="https://x.com/blueprintdata_"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-all hover:scale-110 active:scale-90"
             aria-label="X (Twitter)"
           >
             <svg
@@ -63,54 +64,68 @@ export function Footer({ generatedAt, lookbackDays }: FooterProps) {
           </a>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
           <a
             href="https://www.blueprintdata.xyz/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
             aria-label="Sitio principal"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
               <Globe className="h-4 w-4" />
               blueprintdata.xyz
             </span>
           </a>
-          <span className="text-muted-foreground/40">•</span>
+          <a
+            href="https://blueprintdata.xyz/blog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
+            aria-label="Blog"
+          >
+            Blog
+          </a>
           <a
             href="mailto:contact@blueprintdata.xyz"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-colors hover:underline underline-offset-4"
             aria-label="Contacto"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
               <Mail className="h-4 w-4" />
               contact@blueprintdata.xyz
             </span>
           </a>
-        </div>
+        </nav>
 
-        <div className="text-center space-y-1">
-          <p className="text-sm font-mono text-muted-foreground">
+        <div className="text-center space-y-3 pt-4 border-t border-border/20 w-full max-w-sm">
+          <p className="text-xs font-mono text-muted-foreground leading-relaxed">
             Los datos mostrados corresponden a una ventana móvil de {windowLabel} y son
             de carácter informativo.
           </p>
-          <p className="text-xs font-mono text-muted-foreground/70">
-            <span className="inline-flex items-center gap-2">
+          <div className="flex flex-col items-center gap-1">
+            <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-tighter text-muted-foreground/60 uppercase">
               <Plane className="h-3 w-3" />
-              FUENTE: Datos públicos de
+              FUENTE:
               <a
                 href="https://www.aeropuertosargentina.com/es"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline-offset-4 hover:underline"
+                className="hover:text-foreground transition-colors"
               >
                 aeropuertosargentina.com
               </a>
             </span>
-            {dateLabel ? ` // ÚLTIMA ACTUALIZACIÓN: ${dateLabel}` : ""}
-          </p>
+            {dateLabel && (
+              <span className="text-[10px] font-mono tracking-tighter text-muted-foreground/40 uppercase">
+                Última actualización: {dateLabel}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </footer>
   )
-}
+})
+
+Footer.displayName = "Footer"

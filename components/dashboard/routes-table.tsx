@@ -1,8 +1,11 @@
 "use client"
 
+import { memo } from "react"
 import { motion } from "framer-motion"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { ArrowUpDown, ArrowUp, ArrowDown, ArrowUpRight, Clock, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Table,
   TableBody,
@@ -14,6 +17,9 @@ import {
 import { Button } from "@/components/ui/button"
 import type { TopDestination } from "@/lib/dashboard-utils"
 import { formatNumber } from "@/lib/format"
+
+type SortKey = "destination_city" | "avg_delay_minutes" | "total_flights"
+type SortOrder = "asc" | "desc"
 
 function SortIcon({
   columnKey,
@@ -36,12 +42,7 @@ interface RoutesTableProps {
   data: TopDestination[]
 }
 
-type SortKey = "destination_city" | "avg_delay_minutes" | "total_flights"
-type SortOrder = "asc" | "desc"
-
-
-
-export function TopDestinationsTable({ data }: RoutesTableProps) {
+export const TopDestinationsTable = memo(function TopDestinationsTable({ data }: RoutesTableProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -75,15 +76,19 @@ export function TopDestinationsTable({ data }: RoutesTableProps) {
       : (bVal as number) - (aVal as number)
   })
 
+  const isMobile = useIsMobile()
+  const displayLimit = isMobile ? 5 : 12
+
   if (data.length === 0) {
     return (
-      <section className="mx-auto max-w-5xl px-4 py-8">
-        <div className="rounded-xl border border-border bg-card/50 p-12 text-center backdrop-blur-sm">
-          <p className="text-lg text-muted-foreground">
-            No hay datos disponibles para los filtros seleccionados.
-          </p>
-          <p className="mt-2 text-sm font-mono text-muted-foreground">
-            Probá ajustando el aeropuerto de origen o el destino.
+      <section className="mx-auto max-w-5xl px-4 py-12">
+        <div className="rounded-[2.5rem] border border-white/5 bg-card/10 p-16 text-center backdrop-blur-3xl shadow-2xl">
+          <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
+            <ArrowUpRight className="h-8 w-8 text-muted-foreground/40 rotate-45" />
+          </div>
+          <h3 className="text-xl font-bold text-foreground">No hay rutas por acá</h3>
+          <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
+            Probá ajustando los filtros de arriba (Origen, Destino o Aerolínea) para ver qué aparece.
           </p>
         </div>
       </section>
@@ -97,148 +102,142 @@ export function TopDestinationsTable({ data }: RoutesTableProps) {
       transition={{ duration: 0.5, delay: 0.5 }}
       className="mx-auto max-w-5xl px-4 py-8"
     >
-      <div className="mb-4">
-        <h2 className="text-2xl font-bold text-foreground">
-          Top rutas del período
-        </h2>
-        <p className="mt-1 text-sm font-mono text-muted-foreground">
-          Ranking por volumen de vuelos según filtros activos
-        </p>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="grid gap-3 md:hidden">
-        {sortedData.map((route, index) => (
-          <motion.div
-            key={`${route.origin_airport_code}-${route.destination_country}-${route.destination_city}-${route.rank}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.04 }}
-            className="rounded-lg border border-border bg-card/60 p-4 backdrop-blur-sm"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <p className="text-xs font-mono text-muted-foreground">Destino</p>
-                <p className="text-base font-semibold text-foreground leading-snug">
-                  {route.destination_city || "Sin ciudad"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {route.destination_country || "Sin país"}
-                </p>
-              </div>
-              <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
-                #{route.rank}
-              </span>
-            </div>
-            <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-              <div className="space-y-1">
-                <p className="text-xs font-mono text-muted-foreground">Origen</p>
-                <p className="font-semibold text-foreground">
-                  {route.origin_airport_code || "—"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {route.origin_city || "Sin ciudad"}
-                </p>
-              </div>
-              <div className="flex flex-col items-end justify-center gap-1 text-right">
-                <p className="text-xs font-mono text-muted-foreground">Demora prom.</p>
-                <p className="font-semibold text-foreground">
-                  {formatNumber(route.avg_delay_minutes)} min
-                </p>
-                <p className="text-xs font-mono text-muted-foreground">Vuelos {formatNumber(route.total_flights)}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Desktop table */}
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-card/50 backdrop-blur-sm md:block">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[200px]">
-                  <span className="text-sm font-semibold text-foreground">
-                    Origen
-                  </span>
-                </TableHead>
-                <TableHead className="w-[260px]">
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleSort("destination_city")}
-                    className="h-auto px-0 font-semibold hover:bg-transparent"
-                  >
-                    Destino
-                    <SortIcon columnKey="destination_city" activeKey={sortKey} sortOrder={sortOrder} />
-                  </Button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleSort("avg_delay_minutes")}
-                    className="h-auto px-0 font-semibold hover:bg-transparent"
-                  >
-                    Demora prom.
-                    <SortIcon columnKey="avg_delay_minutes" activeKey={sortKey} sortOrder={sortOrder} />
-                  </Button>
-                </TableHead>
-                <TableHead className="text-right">
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleSort("total_flights")}
-                    className="h-auto px-0 font-semibold hover:bg-transparent"
-                  >
-                    Total vuelos
-                    <SortIcon columnKey="total_flights" activeKey={sortKey} sortOrder={sortOrder} />
-                  </Button>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedData.map((route, index) => (
-                <motion.tr
-                  key={`${route.origin_airport_code}-${route.destination_country}-${route.destination_city}-${route.rank}`}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="group border-b border-border transition-colors hover:bg-muted/50"
-                >
-                  <TableCell className="font-medium">
-                    <div>
-                      <span className="text-foreground">
-                        {route.origin_airport_code || "—"}
-                      </span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {route.origin_city || "Sin ciudad"}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div>
-                      <span className="text-foreground">
-                        {route.destination_city || "Sin ciudad"}
-                      </span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {route.destination_country || "Sin país"}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Ranking #{route.rank}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatNumber(route.avg_delay_minutes)} min
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">
-                    {formatNumber(route.total_flights)}
-                  </TableCell>
-                </motion.tr>
-              ))}
-            </TableBody>
-          </Table>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">
+            Rutas más <span className="text-primary text-glow-primary">Movidas</span>
+          </h2>
+          <p className="mt-1 text-sm font-medium text-muted-foreground leading-relaxed">
+            Las rutas con más vuelos del período. <span className="text-foreground/80">Filtrá y ordená</span> para encontrar lo que buscás.
+          </p>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-muted/30 p-1.5 border border-border/50 backdrop-blur-sm">
+          {[
+            { id: "total_flights", label: "Vuelos" },
+            { id: "avg_delay_minutes", label: "Demora" },
+            { id: "destination_city", label: "Ciudad" },
+          ].map((option) => (
+            <Button
+              key={option.id}
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSort(option.id as SortKey)}
+              className={cn(
+                "h-8 px-4 text-xs font-bold transition-all rounded-lg",
+                sortKey === option.id
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              )}
+            >
+              {option.label}
+              {sortKey === option.id && (
+                <SortIcon columnKey={option.id as SortKey} activeKey={sortKey} sortOrder={sortOrder} />
+              )}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {sortedData.slice(0, displayLimit).map((route, index) => {
+          const isHighDelay = route.avg_delay_minutes > 15;
+          const isLowDelay = route.avg_delay_minutes < 5;
+
+          return (
+            <motion.div
+              key={`${route.origin_airport_code}-${route.destination_country}-${route.destination_city}-${route.rank}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-card/40 p-5 backdrop-blur-xl shadow-lg hover:border-primary/30 transition-all duration-500 hover:shadow-primary/5 hover:translate-y-[-2px]"
+            >
+              {/* Performance Indicator Strip */}
+              <div
+                className={cn(
+                  "absolute left-0 top-0 bottom-0 w-1 transition-all duration-500 group-hover:w-1.5",
+                  isHighDelay ? "bg-red-500" : isLowDelay ? "bg-emerald-500" : "bg-primary"
+                )}
+              />
+
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-[10px] font-black text-primary ring-1 ring-primary/30">
+                    {route.rank}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                    Ruta #{route.rank}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5 border border-white/5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-mono font-bold text-foreground">
+                    {formatNumber(route.total_flights)} <span className="text-muted-foreground opacity-60">OPS</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                {/* Route Visualization */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-none">
+                      <div className="text-2xl font-black tracking-tighter text-foreground uppercase leading-none">
+                        {route.origin_airport_code}
+                      </div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mt-1 truncate max-w-[80px]">
+                        {route.origin_city}
+                      </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="w-full h-px border-t border-dashed border-muted-foreground/30 relative">
+                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-transparent">
+                          <ArrowUpRight className="h-3.5 w-3.5 text-primary/60 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-transform duration-500" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex-none text-right">
+                      <div className="text-2xl font-black tracking-tighter text-foreground uppercase leading-none">
+                        {route.destination_city.substring(0, 3)}
+                      </div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mt-1 truncate max-w-[80px]">
+                        {route.destination_city}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3 w-3 text-muted-foreground/60" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">Demora Promedio</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className={cn(
+                      "text-xl font-black font-mono tracking-tight",
+                      isHighDelay ? "text-red-500" : isLowDelay ? "text-emerald-500" : "text-primary"
+                    )}>
+                      {formatNumber(route.avg_delay_minutes, 1)}
+                    </span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">min</span>
+                  </div>
+                </div>
+
+                {/* Decorative element instead of a button */}
+                <div className="h-11 w-11 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-primary/5 group-hover:border-primary/10 transition-all duration-300">
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground/20 group-hover:text-primary/40 transition-all duration-500" />
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </motion.section>
   )
-}
+})
+
+TopDestinationsTable.displayName = "TopDestinationsTable"
