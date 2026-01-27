@@ -19,7 +19,7 @@ export const Footer = memo(function Footer({ generatedAt, lookbackDays }: Footer
       <div className="mx-auto max-w-5xl px-4 flex flex-col items-center gap-6">
         <div className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
           <Image
-            src="/blue-logo.svg"
+            src={process.env.NODE_ENV === 'production' ? '/front-end-airlines-arg-data-stack/blue-logo.svg' : '/blue-logo.svg'}
             alt="Blueprintdata Logo"
             width={24}
             height={24}
