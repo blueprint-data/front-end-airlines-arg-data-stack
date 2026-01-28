@@ -23,7 +23,7 @@ const siteUrl = siteOrigin
 const title = 'Info Aeropuertos Argentina'
 const description =
   'Compará aerolíneas y rutas con datos reales de puntualidad, demoras y cancelaciones en Argentina. Elegí mejor con insights claros.'
-const ogImage = `${siteUrl}/og-image.jpg`
+const ogImage = `${siteUrl}/imagen.jpg`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
