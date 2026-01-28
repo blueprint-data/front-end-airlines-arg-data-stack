@@ -218,7 +218,7 @@ export const Filters = memo(function Filters({
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border/50 -mx-6 px-6 py-4 -mb-6">
+                <div className="flex flex-col gap-3 flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border/50 -mx-6 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                   <Button onClick={() => setIsOpen(false)} className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20">
                     Aplicar Filtros
                   </Button>

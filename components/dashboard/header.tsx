@@ -2,7 +2,7 @@ import { memo, useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import { asset, cn } from "@/lib/utils"
 
 export const Header = memo(function Header() {
     const [isScrolled, setIsScrolled] = useState(false)
@@ -11,8 +11,9 @@ export const Header = memo(function Header() {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20)
         }
-        window.addEventListener("scroll", handleScroll)
-        return () => window.removeEventListener("scroll", handleScroll)
+        const options: AddEventListenerOptions = { passive: true }
+        window.addEventListener("scroll", handleScroll, options)
+        return () => window.removeEventListener("scroll", handleScroll, options)
     }, [])
 
     return (
@@ -30,7 +31,7 @@ export const Header = memo(function Header() {
         <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-4 sm:px-6 lg:px-8">
                 <Link href="/" className="mr-4 flex items-center space-x-2 sm:mr-6 hover:opacity-80 transition-opacity">
                     <Image
-                        src={process.env.NODE_ENV === 'production' ? '/front-end-airlines-arg-data-stack/blue-logo.svg' : '/blue-logo.svg'}
+                        src={asset("/blue-logo.svg")}
                         alt="Blueprintdata Logo"
                         width={32}
                         height={32}

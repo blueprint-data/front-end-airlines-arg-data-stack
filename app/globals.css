@@ -123,3 +123,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 900px;
+  }
+}

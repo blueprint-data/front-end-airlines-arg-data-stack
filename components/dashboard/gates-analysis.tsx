@@ -129,7 +129,7 @@ export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = []
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className={`mx-auto max-w-5xl px-4 py-8 ${className || ""}`}
+            className={`cv-auto mx-auto max-w-5xl px-4 py-8 ${className || ""}`}
         >
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>

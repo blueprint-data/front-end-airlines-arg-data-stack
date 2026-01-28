@@ -1,14 +1,18 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useMemo, useEffect, useCallback, useRef } from "react"
+import { useState, useMemo, useEffect, useCallback, useRef, useDeferredValue, useTransition, type ReactNode } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Hero } from "@/components/dashboard/hero"
 import { Header } from "@/components/dashboard/header"
 import { Filters } from "@/components/dashboard/filters"
 import { Footer } from "@/components/dashboard/footer"
+import { FAQ } from "@/components/dashboard/faq"
 import { ChartSkeleton, KPISkeleton, TableSkeleton, Skeleton } from "@/components/dashboard/dashboard-skeleton"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useInView } from "@/hooks/use-in-view"
+import { usePrefersReducedData } from "@/hooks/use-reduced-data"
 import {
     getTopDestinationsFromRoutes,
     getTopDelays,
@@ -43,11 +47,50 @@ interface FilterState {
     windowDays: string
 }
 
+interface LazySectionProps {
+    children: ReactNode
+    fallback: ReactNode
+    rootMargin?: string
+    onVisible?: () => void
+}
+
+const LazySection = ({ children, fallback, rootMargin, onVisible }: LazySectionProps) => {
+    const { ref, inView } = useInView<HTMLDivElement>({ rootMargin })
+    const hasTriggered = useRef(false)
+
+    useEffect(() => {
+        if (!inView || hasTriggered.current) return
+        hasTriggered.current = true
+        onVisible?.()
+    }, [inView, onVisible])
+
+    return (
+        <div ref={ref}>
+            {inView ? children : fallback}
+        </div>
+    )
+}
+
 export function DashboardContent() {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { data, loading, error } = useDashboardData()
+    const {
+        data,
+        loading,
+        detailsLoading,
+        detailsLoaded,
+        routesLoaded,
+        error,
+        loadDetails,
+        loadRoutes,
+    } = useDashboardData()
+    const [, startTransition] = useTransition()
+    const [isHydrated, setIsHydrated] = useState(false)
+    const isMobile = useIsMobile()
+    const prefersReducedData = usePrefersReducedData()
+    const showHeroVideo = isHydrated
+    const lazyMargin = isMobile ? "0px 0px" : "240px 0px"
 
     const isInitialMount = useRef(true)
     const hasSetDefaultOrigin = useRef(false)
@@ -60,26 +103,102 @@ export function DashboardContent() {
         windowDays: searchParams.get("windowDays") || "60",
     }))
 
+    const fallbackLookbackDays = Number(filters.windowDays || "60")
+    const heroLookbackDays = data?.headline?.lookback_days ?? fallbackLookbackDays
+
+    const deferredFilters = useDeferredValue(filters)
+    const [detailsRequested, setDetailsRequested] = useState(false)
+    const hasRoutes = routesLoaded
+    const showDetailContent = detailsLoaded && !detailsLoading
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsHydrated(true)
+    }, [])
+
+    useEffect(() => {
+        if (!isMobile) {
+            loadRoutes()
+            return
+        }
+        if (routesLoaded) return
+
+        let triggered = false
+        const handleUserIntent = () => {
+            if (triggered) return
+            triggered = true
+            loadRoutes()
+            cleanup()
+        }
+
+        const handleKeydown = (event: KeyboardEvent) => {
+            if (event.key === "Tab" || event.key === "Enter" || event.key === " ") {
+                handleUserIntent()
+            }
+        }
+
+        const cleanup = () => {
+            window.removeEventListener("scroll", handleUserIntent)
+            window.removeEventListener("pointerdown", handleUserIntent)
+            window.removeEventListener("keydown", handleKeydown)
+        }
+
+        window.addEventListener("scroll", handleUserIntent, { passive: true })
+        window.addEventListener("pointerdown", handleUserIntent, { passive: true })
+        window.addEventListener("keydown", handleKeydown)
+
+        return cleanup
+    }, [isMobile, routesLoaded, loadRoutes])
+
+    const handleDetailsVisible = useCallback(() => {
+        if (detailsLoaded || detailsRequested) return
+        setDetailsRequested(true)
+        loadRoutes()
+        loadDetails()
+    }, [detailsLoaded, detailsRequested, loadDetails, loadRoutes])
+
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false
             return
         }
 
-        const params = new URLSearchParams()
-        if (filters.origin) params.set("origin", filters.origin)
-        if (filters.country) params.set("country", filters.country)
-        if (filters.city) params.set("city", filters.city)
-        if (filters.airline) params.set("airline", filters.airline)
-        if (filters.windowDays && filters.windowDays !== "60") {
-            params.set("windowDays", filters.windowDays)
+        const currentQueryString = searchParams.toString()
+        const params = new URLSearchParams(currentQueryString)
+        const syncParam = (key: keyof FilterState, value: string) => {
+            const currentValue = searchParams.get(key) || ""
+            if (value) {
+                if (currentValue !== value) {
+                    params.set(key, value)
+                }
+            } else if (currentValue) {
+                params.delete(key)
+            }
         }
 
+        syncParam("origin", filters.origin)
+        syncParam("country", filters.country)
+        syncParam("city", filters.city)
+        syncParam("airline", filters.airline)
+        syncParam(
+            "windowDays",
+            filters.windowDays && filters.windowDays !== "60" ? filters.windowDays : ""
+        )
+
         const queryString = params.toString()
-        router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
-            scroll: false
+        const nextUrl = queryString ? `${pathname}?${queryString}` : pathname
+        const currentUrl = currentQueryString ? `${pathname}?${currentQueryString}` : pathname
+
+        if (nextUrl === currentUrl) {
+            return
+        }
+
+        startTransition(() => {
+            router.replace(nextUrl, {
+                scroll: false
+            })
         })
-    }, [filters, router, pathname])
+    }, [filters, router, pathname, searchParams, startTransition])
 
     const updateFilters = useCallback((updates: Partial<FilterState>) => {
         setFilters(prev => ({ ...prev, ...updates }))
@@ -115,43 +234,55 @@ export function DashboardContent() {
         }
     }, [data?.headline?.lookback_days, searchParams, filters.windowDays])
 
+    const shouldComputeRoutes = (detailsRequested || detailsLoaded) && hasRoutes
+    const showRouteDetails = shouldComputeRoutes
+
     const filteredRoutes = useMemo(() => {
-        if (!data?.routes) return []
+        if (!shouldComputeRoutes || !data?.routes?.length) return []
         return filterRoutes(data.routes, {
-            origin: filters.origin || undefined,
-            country: filters.country || undefined,
-            city: filters.city || undefined,
-            airline: filters.airline || undefined,
+            origin: deferredFilters.origin || undefined,
+            country: deferredFilters.country || undefined,
+            city: deferredFilters.city || undefined,
+            airline: deferredFilters.airline || undefined,
         })
-    }, [data, filters.origin, filters.country, filters.city, filters.airline])
+    }, [shouldComputeRoutes, data, deferredFilters.origin, deferredFilters.country, deferredFilters.city, deferredFilters.airline])
 
-    const routeMetrics = useMemo(
-        () => aggregateRoutes(filteredRoutes),
-        [filteredRoutes]
-    )
+    const routeMetrics = useMemo(() => {
+        if (!shouldComputeRoutes) {
+            return {
+                totalFlights: 0,
+                totalOnTime: 0,
+                totalDelayed: 0,
+                totalCancelled: 0,
+                avgDelayMinutes: 0,
+            }
+        }
+        return aggregateRoutes(filteredRoutes)
+    }, [filteredRoutes, shouldComputeRoutes])
 
-    const topDestinations = useMemo(
-        () => getTopDestinationsFromRoutes(filteredRoutes, 15),
-        [filteredRoutes]
-    )
+    const topDestinations = useMemo(() => {
+        if (!shouldComputeRoutes) return []
+        return getTopDestinationsFromRoutes(filteredRoutes, 15)
+    }, [filteredRoutes, shouldComputeRoutes])
 
     const topDelays = useMemo(() => {
+        if (!detailsLoaded) return []
         const records = data ? getTopDelays(data.tops) : []
         return records.filter((record) => {
-            if (filters.origin && record.origin_airport_code !== filters.origin) return false
-            if (filters.country && record.destination_country !== filters.country) return false
-            if (filters.city && record.destination_city !== filters.city) return false
+            if (deferredFilters.origin && record.origin_airport_code !== deferredFilters.origin) return false
+            if (deferredFilters.country && record.destination_country !== deferredFilters.country) return false
+            if (deferredFilters.city && record.destination_city !== deferredFilters.city) return false
             return true
         })
-    }, [data, filters.origin, filters.country, filters.city])
+    }, [data, deferredFilters.origin, deferredFilters.country, deferredFilters.city, detailsLoaded])
 
     const filteredBuckets = useMemo(() => {
-        if (!data) return []
+        if (!data || !shouldComputeRoutes) return []
 
         const { totalOnTime, totalCancelled, totalDelayed } = routeMetrics
 
-        if (filters.airline) {
-            const airlineData = data.airlines.find(a => a.airline_name === filters.airline)
+        if (deferredFilters.airline) {
+            const airlineData = data.airlines.find(a => a.airline_name === deferredFilters.airline)
             if (airlineData) {
                 return [
                     { bucket: "on_time_or_early", total_flights: airlineData.on_time_or_early },
@@ -181,7 +312,7 @@ export function DashboardContent() {
                 })),
             { bucket: "cancelled", total_flights: totalCancelled },
         ]
-    }, [data, filters.airline, routeMetrics])
+    }, [data, deferredFilters.airline, routeMetrics, shouldComputeRoutes])
 
     const handleSetOrigin = useCallback((val: string) => {
         updateFilters({
@@ -219,77 +350,104 @@ export function DashboardContent() {
         <main className="min-h-screen bg-background">
             <Header />
 
-            {loading ? (
-                <div className="pt-20">
-                    <div className="mx-auto max-w-5xl px-4 py-8">
-                        <Skeleton className="h-10 w-full rounded-lg" />
-                    </div>
-                    <KPISkeleton />
+            <div className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden">
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                    {showHeroVideo ? (
+                        <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            preload="metadata"
+                            poster={asset("/og-image.jpg")}
+                            aria-hidden="true"
+                            className="h-full w-full object-cover scale-105 brightness-[0.35] saturate-[0.7]"
+                        >
+                            <source
+                                src={asset("/hero-video.mp4")}
+                                type="video/mp4"
+                            />
+                        </video>
+                    ) : null}
+                    <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_70%)]" />
                 </div>
-            ) : error ? (
-                <section className="mx-auto max-w-5xl px-4 py-32 text-center">
+
+                <div className="relative z-10">
+                    <Hero
+                        generatedAt={data?.generatedAt}
+                        lookbackDays={heroLookbackDays}
+                    />
+                    <Filters
+                        routes={data?.routes ?? []}
+                        origin={filters.origin}
+                        setOrigin={handleSetOrigin}
+                        country={filters.country}
+                        setCountry={handleSetCountry}
+                        city={filters.city}
+                        setCity={handleSetCity}
+                        airline={filters.airline}
+                        setAirline={handleSetAirline}
+                        windowDays={filters.windowDays}
+                        setWindowDays={handleSetWindowDays}
+                    />
+                </div>
+            </div>
+
+            {error && !data && (
+                <section className="mx-auto max-w-5xl px-4 py-16 text-center">
                     <p className="text-sm font-mono text-red-400">
                         No pudimos cargar los datos. Intentá nuevamente en unos minutos.
                     </p>
                 </section>
-            ) : data ? (
-                <>
-                    <div className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden">
-                        <div className="absolute inset-0 z-0 overflow-hidden">
-                            <video
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="h-full w-full object-cover scale-105 brightness-[0.35] saturate-[0.7]"
-                            >
-                                <source
-                                    src={asset("/hero-video.mp4")}
-                                    type="video/mp4"
-                                />
-                            </video>
-                            <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background" />
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.1),transparent_70%)]" />
-                        </div>
+            )}
 
-                        <div className="relative z-10">
-                            <Hero
-                                generatedAt={data.generatedAt}
+            {!data && loading ? (
+                <div className="pt-12">
+                    <div className="mx-auto max-w-5xl px-4 py-6">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                    <KPISkeleton />
+                </div>
+            ) : data ? (
+                <div className="space-y-12 sm:space-y-20 pb-20 mt-12 sm:mt-20">
+                    <LazySection fallback={<ChartSkeleton />} rootMargin={lazyMargin} onVisible={handleDetailsVisible}>
+                        {showRouteDetails ? (
+                            <BucketDistributionChart
+                                buckets={filteredBuckets}
+                                avgDelayMinutes={routeMetrics.avgDelayMinutes}
                                 lookbackDays={data.headline.lookback_days}
                             />
-                            <Filters
-                                routes={data.routes}
-                                origin={filters.origin}
-                                setOrigin={handleSetOrigin}
-                                country={filters.country}
-                                setCountry={handleSetCountry}
-                                city={filters.city}
-                                setCity={handleSetCity}
-                                airline={filters.airline}
-                                setAirline={handleSetAirline}
-                                windowDays={filters.windowDays}
-                                setWindowDays={handleSetWindowDays}
+                        ) : (
+                            <ChartSkeleton />
+                        )}
+                    </LazySection>
+                    <LazySection fallback={<ChartSkeleton />} rootMargin={lazyMargin} onVisible={handleDetailsVisible}>
+                        {showRouteDetails ? <AirlinesRanking data={filteredRoutes} /> : <ChartSkeleton />}
+                    </LazySection>
+                    <LazySection fallback={<TableSkeleton />} rootMargin={lazyMargin} onVisible={handleDetailsVisible}>
+                        {showRouteDetails ? <TopDestinationsTable data={topDestinations} /> : <TableSkeleton />}
+                    </LazySection>
+                    <LazySection fallback={<TableSkeleton />} rootMargin={lazyMargin} onVisible={handleDetailsVisible}>
+                        {showDetailContent ? (
+                            <SmartInsights
+                                topDelays={topDelays}
+                                gates={data.gates}
                             />
-                        </div>
-                    </div>
-
-                    <div className="space-y-12 sm:space-y-20 pb-20 mt-12 sm:mt-20">
-                        <BucketDistributionChart
-                            buckets={filteredBuckets}
-                            avgDelayMinutes={routeMetrics.avgDelayMinutes}
-                            lookbackDays={data.headline.lookback_days}
-                        />
-                        <AirlinesRanking data={filteredRoutes} />
-                        <TopDestinationsTable data={topDestinations} />
-                        <SmartInsights
-                            topDelays={topDelays}
-                            gates={data.gates}
-                        />
-                        <TrendChart data={data.dailyStatus} />
-                        <GatesAnalysis gates={data.gates} />
-                    </div>
-                </>
+                        ) : (
+                            <TableSkeleton />
+                        )}
+                    </LazySection>
+                    <LazySection fallback={<ChartSkeleton />} rootMargin={lazyMargin} onVisible={handleDetailsVisible}>
+                        {showDetailContent ? <TrendChart data={data.dailyStatus} /> : <ChartSkeleton />}
+                    </LazySection>
+                    <LazySection fallback={<ChartSkeleton />} rootMargin={lazyMargin} onVisible={handleDetailsVisible}>
+                        {showDetailContent ? <GatesAnalysis gates={data.gates} /> : <ChartSkeleton />}
+                    </LazySection>
+                </div>
             ) : null}
+
+            <FAQ />
 
             {data && (
                 <Footer

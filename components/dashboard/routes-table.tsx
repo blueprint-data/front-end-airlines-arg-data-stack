@@ -1,6 +1,6 @@
 "use client"
 
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { motion } from "framer-motion"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { ArrowUpDown, ArrowUp, ArrowDown, ArrowUpRight, Clock, ChevronRight } from "lucide-react"
@@ -61,27 +61,29 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
     router.replace(`${pathname}?${params.toString()}`, { scroll: false })
   }
 
-  const sortedData = [...data].sort((a, b) => {
-    const aVal = a[sortKey]
-    const bVal = b[sortKey]
+  const sortedData = useMemo(() => {
+    return [...data].sort((a, b) => {
+      const aVal = a[sortKey]
+      const bVal = b[sortKey]
 
-    if (typeof aVal === "string" && typeof bVal === "string") {
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortOrder === "asc"
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal)
+      }
+
       return sortOrder === "asc"
-        ? aVal.localeCompare(bVal)
-        : bVal.localeCompare(aVal)
-    }
-
-    return sortOrder === "asc"
-      ? (aVal as number) - (bVal as number)
-      : (bVal as number) - (aVal as number)
-  })
+        ? (aVal as number) - (bVal as number)
+        : (bVal as number) - (aVal as number)
+    })
+  }, [data, sortKey, sortOrder])
 
   const isMobile = useIsMobile()
   const displayLimit = isMobile ? 5 : 12
 
   if (data.length === 0) {
     return (
-      <section className="mx-auto max-w-5xl px-4 py-12">
+      <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="rounded-[2.5rem] border border-white/5 bg-card/10 p-16 text-center backdrop-blur-3xl shadow-2xl">
           <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
             <ArrowUpRight className="h-8 w-8 text-muted-foreground/40 rotate-45" />
@@ -100,7 +102,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      className="mx-auto max-w-5xl px-4 py-8"
+      className="cv-auto mx-auto max-w-5xl px-4 py-8"
     >
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
