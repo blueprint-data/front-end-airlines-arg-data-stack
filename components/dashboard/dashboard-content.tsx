@@ -359,7 +359,7 @@ export function DashboardContent() {
                             muted
                             playsInline
                             preload="metadata"
-                            poster={asset("/imagen.jpg")}
+                            poster={asset("/og-imagen.jpg")}
                             aria-hidden="true"
                             className="h-full w-full object-cover scale-105 brightness-[0.35] saturate-[0.7]"
                         >
