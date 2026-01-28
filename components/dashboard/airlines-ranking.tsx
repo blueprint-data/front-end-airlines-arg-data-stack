@@ -59,13 +59,14 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
             ? airline.delayMinutes / airline.totalFlights
             : 0,
       }))
+      .filter((airline) => airline.totalFlights > 30)
       .sort((a, b) => b.onTimePercentage - a.onTimePercentage)
       .slice(0, 8)
   }, [data])
 
   const colors = ["#06b6d4", "#8b5cf6", "#22c55e", "#f59e0b", "#ec4899"]
 
-  if (data.length === 0) {
+  if (chartData.length === 0) {
     return (
       <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="rounded-3xl border border-white/5 bg-card/20 p-16 text-center backdrop-blur-3xl shadow-2xl">
@@ -73,16 +74,15 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
             <Info className="h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
           </div>
           <h3 className="text-xl font-bold text-foreground">Sin datos de ranking</h3>
-          <p className="text-muted-foreground mt-2 max-w-sm mx-auto">No hay registros de aerolíneas para los filtros seleccionados.</p>
+          <p className="text-muted-foreground mt-2 max-w-sm mx-auto">Ninguna aerolínea supera los 30 vuelos con los filtros actuales.</p>
         </div>
       </section>
     )
   }
 
-  const topAirlines = chartData.slice(0, 8) // Get top 8 sorted by punctuality
+  const topAirlines = chartData // already limited to airlines with > 30 flights
 
-  // Find the winner: the highest punctuality among those with > 30 flights
-  const winner = chartData.find(a => a.totalFlights > 30)
+  const winner = chartData[0]
 
   return (
     <motion.section
