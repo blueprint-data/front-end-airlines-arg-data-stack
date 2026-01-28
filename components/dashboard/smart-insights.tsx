@@ -48,7 +48,7 @@ export const SmartInsights = memo(function SmartInsights({ topDelays, gates }: S
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl px-4 py-12"
+            className="cv-auto mx-auto max-w-5xl px-4 py-12"
         >
             <div className="flex flex-col gap-1 mb-8">
                 <h2 className="text-2xl font-bold text-foreground">

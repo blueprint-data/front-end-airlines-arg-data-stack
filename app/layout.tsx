@@ -13,27 +13,39 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: '--font-mono',
   display: 'swap',
+  preload: false,
 })
 
-const siteUrl = 'https://blueprint-data.github.io/front-end-airlines-arg-data-stack'
-const title = 'Blueprintdata Aeropuertos'
-const description = 'Monitor de puntualidad y demoras de aerolíneas en Argentina. Datos en tiempo real sobre cancelaciones y retrasos promedio por ruta y gate.'
-const basePath = process.env.NODE_ENV === 'production' ? '/front-end-airlines-arg-data-stack' : ''
-const ogImage = '/og-image.png'
+const siteOrigin = 'https://infoaeropuertos.ar'
+const basePath = ''
+const siteUrl = siteOrigin
+const title = 'Aeropuertos Blueprintdata'
+const description = 'Compará aerolíneas y rutas con datos reales de puntualidad, demoras y cancelaciones en Argentina. Elegí mejor con insights claros.'
+const ogImage = `${siteUrl}/og-image.jpg`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title,
   description,
-  keywords: ["aerolíneas argentina", "puntualidad vuelos", "demoras aeropuertos", "retrasos aerolíneas", "blueprintdata", "aeropuertos argentina", "estado de vuelos"],
+  keywords: [
+    "puntualidad vuelos argentina",
+    "demoras vuelos",
+    "cancelaciones vuelos",
+    "aerolineas argentinas",
+    "rendimiento aerolineas",
+    "aeropuertos argentina",
+    "estado de vuelos",
+    "datos de vuelos",
+    "blueprintdata",
+  ],
   alternates: {
-    canonical: '/',
+    canonical: siteUrl,
   },
   openGraph: {
     title,
     description,
     url: siteUrl,
-    siteName: title,
+    siteName: 'Blueprintdata Aeropuertos',
     locale: 'es_AR',
     type: 'website',
     images: [

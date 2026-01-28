@@ -79,7 +79,7 @@ export const TrendChart = memo(function TrendChart({ data }: TrendChartProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.6 }}
-      className="mx-auto max-w-5xl px-4 py-8"
+      className="cv-auto mx-auto max-w-5xl px-4 py-8"
     >
       <div className="mb-4">
         <h2 className="text-2xl font-bold text-foreground">

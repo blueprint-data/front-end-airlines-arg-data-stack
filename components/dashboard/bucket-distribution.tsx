@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { BucketDistribution } from "@/lib/types"
 import { formatNumber, formatPercentage } from "@/lib/format"
@@ -61,12 +61,20 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
   avgDelayMinutes,
   lookbackDays
 }: BucketDistributionProps) {
-  const total = buckets.reduce((acc: number, bucket: BucketDistribution) => acc + (bucket.total_flights || 0), 0)
+  const total = useMemo(
+    () => buckets.reduce((acc: number, bucket: BucketDistribution) => acc + (bucket.total_flights || 0), 0),
+    [buckets]
+  )
   const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
+
+  const sortedBuckets = useMemo(() => {
+    const order = ["on_time_or_early", "delay_15_0", "delay_30_15", "delay_45_30", "delay_over_45", "cancelled"]
+    return [...buckets].sort((a, b) => order.indexOf(a.bucket) - order.indexOf(b.bucket))
+  }, [buckets])
 
   if (buckets.length === 0 || total === 0) {
     return (
-      <section className="mx-auto max-w-5xl px-4 py-8">
+      <section className="cv-auto mx-auto max-w-5xl px-4 py-8">
         <div className="rounded-3xl border border-white/5 bg-card/40 p-16 text-center backdrop-blur-3xl shadow-2xl">
           <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
             <Info className="h-8 w-8 text-muted-foreground/40" />
@@ -78,19 +86,13 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
     )
   }
 
-  // Sort buckets by severity (on_time first, then delays, then cancelled)
-  const sortedBuckets = [...buckets].sort((a, b) => {
-    const order = ["on_time_or_early", "delay_15_0", "delay_30_15", "delay_45_30", "delay_over_45", "cancelled"]
-    return order.indexOf(a.bucket) - order.indexOf(b.bucket)
-  })
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="mx-auto max-w-5xl px-4 py-12"
+      className="cv-auto mx-auto max-w-5xl px-4 py-12"
     >
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10 lg:mb-12">

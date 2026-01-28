@@ -6,9 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function asset(path: string) {
-  const basePath = process.env.NODE_ENV === 'production'
-    ? '/front-end-airlines-arg-data-stack'
-    : ''
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
   // Ensure the path starts with /
   const normalizedPath = path.startsWith('/') ? path : `/${path}`

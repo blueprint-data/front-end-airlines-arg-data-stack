@@ -67,7 +67,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
 
   if (data.length === 0) {
     return (
-      <section className="mx-auto max-w-5xl px-4 py-12">
+      <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="rounded-3xl border border-white/5 bg-card/20 p-16 text-center backdrop-blur-3xl shadow-2xl">
           <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
             <Info className="h-8 w-8 text-muted-foreground/40" />
@@ -90,7 +90,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="mx-auto max-w-5xl px-4 py-12"
+      className="cv-auto mx-auto max-w-5xl px-4 py-12"
     >
       {/* Header with Top Performer Reveal */}
       <div className="flex flex-col lg:flex-row gap-8 mb-12 lg:items-end justify-between">
