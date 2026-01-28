@@ -1,64 +1,56 @@
 import { Suspense } from "react"
 import { DashboardContent } from "@/components/dashboard/dashboard-content"
+import { FAQ_ITEMS } from "@/components/dashboard/faq-data"
 
 export default function DashboardPage() {
+  const siteUrl = "https://infoaeropuertos.ar"
+  const organizationJson = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    name: "Blueprintdata",
+    url: "https://blueprintdata.xyz",
+    logo: `${siteUrl}/blue-logo.svg`,
+    sameAs: [
+      "https://www.linkedin.com/company/bpdata/",
+      "https://github.com/blueprint-data",
+      "https://x.com/blueprintdata_",
+    ],
+  }
+  const websiteJson = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    name: "Info Aeropuertos Argentina",
+    url: siteUrl,
+    inLanguage: "es-AR",
+    publisher: {
+      "@id": `${siteUrl}/#organization`,
+    },
+  }
   const faqJson = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "¿Qué puedo ver en este dashboard de aerolíneas?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Comparás puntualidad, demoras y cancelaciones de vuelos que salen de Argentina, por aerolínea y destino.",
-        },
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
       },
-      {
-        "@type": "Question",
-        name: "¿Cómo me ayuda a elegir vuelos?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Te muestra qué aerolíneas y rutas vienen rindiendo mejor para decidir con datos reales, no con intuición.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿De dónde salen los datos?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Se basan en fuentes públicas de Aeropuertos Argentina y se procesan para que puedas analizarlos rápido.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿Cada cuánto se actualiza?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Usamos una ventana móvil de 30/60/90 días, así siempre ves la tendencia más reciente.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿Puedo filtrar por origen, destino y aerolínea?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Sí. Podés filtrar por aeropuerto de origen, país/ciudad de destino y aerolínea.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿Qué significa “puntualidad”?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Vuelos a tiempo o temprano frente a demoras agrupadas por rangos.",
-        },
-      },
-    ],
+    })),
   }
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJson) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJson) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJson) }}

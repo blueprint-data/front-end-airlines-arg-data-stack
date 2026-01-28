@@ -130,7 +130,7 @@ export const Filters = memo(function Filters({
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <SlidersHorizontal className="h-5 w-5" />
+              <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-foreground">Configuración</h3>
@@ -148,7 +148,10 @@ export const Filters = memo(function Filters({
                 onClick={clearFilters}
                 className="h-9 px-3 text-xs font-bold hover:bg-red-500/10 hover:text-red-500 transition-colors group"
               >
-                <RotateCcw className="mr-2 h-3.5 w-3.5 group-hover:rotate-[-45deg] transition-transform" />
+                <RotateCcw
+                  className="mr-2 h-3.5 w-3.5 group-hover:rotate-[-45deg] transition-transform"
+                  aria-hidden="true"
+                />
                 LIMPIAR
               </Button>
             )}
@@ -159,7 +162,7 @@ export const Filters = memo(function Filters({
                   key={days}
                   disabled
                   className={cn(
-                    "flex h-8 px-4 items-center justify-center rounded-full text-xs font-bold transition-all",
+                    "flex h-8 px-4 items-center justify-center rounded-full text-xs font-bold transition-[background-color,color,box-shadow]",
                     windowDays === days
                       ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                       : "text-muted-foreground opacity-50 cursor-not-allowed"
@@ -178,7 +181,7 @@ export const Filters = memo(function Filters({
               <SheetTrigger asChild>
                 <Button variant="outline" className="w-full h-14 justify-between text-base border-primary/20 bg-primary/5 hover:bg-primary/10 group">
                   <span className="flex items-center gap-2">
-                    <SlidersHorizontal className="h-4 w-4 text-primary" />
+                    <SlidersHorizontal className="h-4 w-4 text-primary" aria-hidden="true" />
                     Filtros de ruta
                   </span>
                   <div className="flex items-center gap-2">
@@ -321,7 +324,7 @@ const FilterForm = ({
     {/* Origen */}
     <div className="space-y-2">
       <Label htmlFor="filter-origin" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        <PlaneTakeoff className="h-3 w-3" /> Origen
+        <PlaneTakeoff className="h-3 w-3" aria-hidden="true" /> Origen
       </Label>
       <Select
         value={origin || "all"}
@@ -331,7 +334,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-origin"
           className={cn(
-            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
+            "h-12 w-full transition-[background-color,border-color,box-shadow,color] hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             origin && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
@@ -351,7 +354,7 @@ const FilterForm = ({
     {/* País destino */}
     <div className="space-y-2">
       <Label htmlFor="filter-country" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        <MapPin className="h-3 w-3" /> País Destino
+        <MapPin className="h-3 w-3" aria-hidden="true" /> País Destino
       </Label>
       <Select
         value={country || "all"}
@@ -361,7 +364,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-country"
           className={cn(
-            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
+            "h-12 w-full transition-[background-color,border-color,box-shadow,color] hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             country && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
@@ -379,7 +382,7 @@ const FilterForm = ({
     {/* Ciudad destino */}
     <div className="space-y-2">
       <Label htmlFor="filter-city" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        <MapPin className="h-3 w-3" /> Ciudad Destino
+        <MapPin className="h-3 w-3" aria-hidden="true" /> Ciudad Destino
       </Label>
       <Select
         value={city || "all"}
@@ -389,7 +392,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-city"
           className={cn(
-            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
+            "h-12 w-full transition-[background-color,border-color,box-shadow,color] hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             city && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
@@ -407,7 +410,7 @@ const FilterForm = ({
     {/* Aerolínea */}
     <div className="space-y-2">
       <Label htmlFor="filter-airline" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        <Building2 className="h-3 w-3" /> Aerolínea
+        <Building2 className="h-3 w-3" aria-hidden="true" /> Aerolínea
       </Label>
       <Select
         value={airline || "all"}
@@ -417,7 +420,7 @@ const FilterForm = ({
         <SelectTrigger
           id="filter-airline"
           className={cn(
-            "h-12 w-full transition-all hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
+            "h-12 w-full transition-[background-color,border-color,box-shadow,color] hover:border-primary/50 bg-background/50 backdrop-blur-sm truncate",
             airline && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
       >
@@ -470,8 +473,13 @@ const ActiveFiltersSummary = ({
             className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
             <span className="truncate">Origen: {origin}</span>
-            <button onClick={() => setOrigin("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
-              <X className="h-3 w-3" />
+            <button
+              type="button"
+              onClick={() => setOrigin("")}
+              aria-label="Quitar filtro de origen"
+              className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           </motion.span>
         )}
@@ -484,8 +492,13 @@ const ActiveFiltersSummary = ({
             className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
             <span className="truncate">País: {country}</span>
-            <button onClick={() => setCountry("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
-              <X className="h-3 w-3" />
+            <button
+              type="button"
+              onClick={() => setCountry("")}
+              aria-label="Quitar filtro de país"
+              className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           </motion.span>
         )}
@@ -498,8 +511,13 @@ const ActiveFiltersSummary = ({
             className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
             <span className="truncate">Ciudad: {city}</span>
-            <button onClick={() => setCity("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
-              <X className="h-3 w-3" />
+            <button
+              type="button"
+              onClick={() => setCity("")}
+              aria-label="Quitar filtro de ciudad"
+              className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           </motion.span>
         )}
@@ -512,8 +530,13 @@ const ActiveFiltersSummary = ({
             className="inline-flex items-center justify-between gap-1 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-medium text-primary"
           >
             <span className="truncate">Línea: {airline}</span>
-            <button onClick={() => setAirline("")} className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0">
-              <X className="h-3 w-3" />
+            <button
+              type="button"
+              onClick={() => setAirline("")}
+              aria-label="Quitar filtro de aerolínea"
+              className="ml-1 p-0.5 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           </motion.span>
         )}

@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { MotionProvider } from "@/components/motion-provider"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -19,13 +20,17 @@ const jetbrainsMono = JetBrains_Mono({
 const siteOrigin = 'https://infoaeropuertos.ar'
 const basePath = ''
 const siteUrl = siteOrigin
-const title = 'Aeropuertos Blueprintdata'
-const description = 'Compará aerolíneas y rutas con datos reales de puntualidad, demoras y cancelaciones en Argentina. Elegí mejor con insights claros.'
+const title = 'Info Aeropuertos Argentina'
+const description =
+  'Compará aerolíneas y rutas con datos reales de puntualidad, demoras y cancelaciones en Argentina. Elegí mejor con insights claros.'
 const ogImage = `${siteUrl}/og-image.jpg`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title,
+  title: {
+    default: title,
+    template: `%s · ${title}`,
+  },
   description,
   keywords: [
     "puntualidad vuelos argentina",
@@ -45,7 +50,7 @@ export const metadata: Metadata = {
     title,
     description,
     url: siteUrl,
-    siteName: 'Blueprintdata Aeropuertos',
+    siteName: title,
     locale: 'es_AR',
     type: 'website',
     images: [
@@ -80,7 +85,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        {children}
+        <MotionProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 z-[100] rounded-md bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-lg ring-1 ring-border"
+          >
+            Saltar al contenido
+          </a>
+          {children}
+        </MotionProvider>
       </body>
     </html>
   )

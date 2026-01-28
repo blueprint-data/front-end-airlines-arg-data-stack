@@ -22,7 +22,7 @@ export const Header = memo(function Header() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
             className={cn(
-                "fixed top-0 z-50 w-full transition-all duration-700",
+                "fixed top-0 z-50 w-full transition-[background-color,border-color,box-shadow,backdrop-filter] duration-700 motion-reduce:transition-none",
                 isScrolled
                     ? "rounded-b-[32px] border-b border-white/5 bg-background/60 backdrop-blur-xl backdrop-saturate-150 shadow-[0_35px_60px_-25px_rgba(2,6,23,0.55)]"
                     : "bg-gradient-to-b from-black/40 to-transparent border-transparent py-3"
@@ -47,7 +47,7 @@ export const Header = memo(function Header() {
                             href="https://blueprintdata.xyz/blog"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm font-medium text-muted-foreground transition-all hover:text-foreground hover:scale-105 active:scale-95"
+                            className="text-sm font-medium text-muted-foreground transition-[color,transform] hover:text-foreground hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:transform-none"
                         >
                             Blog
                         </a>

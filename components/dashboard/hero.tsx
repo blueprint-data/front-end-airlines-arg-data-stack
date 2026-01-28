@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from "framer-motion"
 import { formatDateShort } from "@/lib/format"
 import { memo } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import Image from "next/image"
 
 interface HeroProps {
   generatedAt?: string
@@ -27,7 +28,7 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
           transition={baseTransition}
           className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-mono font-medium text-primary backdrop-blur-sm"
         >
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+          <span className="h-1.5 w-1.5 animate-pulse motion-reduce:animate-none rounded-full bg-primary" />
           DATOS HISTÓRICOS - ÚLTIMOS {windowLabel}
         </motion.span>
 
@@ -37,9 +38,9 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
           transition={{ ...baseTransition, delay: reduceMotion ? 0 : 0.1 }}
           className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance"
         >
-          ¿Cuál es la aerolínea <br />que <span className="text-primary text-glow-primary">mejor rinde</span>?
+          Info Aeropuertos<br />
+          <span className="text-primary text-glow-primary">Argentina</span>
         </motion.h1>
-
         <motion.p
           initial={baseInitial}
           animate={{ opacity: 1, y: 0 }}
@@ -49,6 +50,25 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
           Compará el desempeño real de los vuelos que salen de Argentina.
           <span className="block mt-2 text-foreground/80">Chequeá puntualidad, demoras y cancelaciones en tiempo real.</span>
         </motion.p>
+
+        <motion.div
+          initial={baseInitial}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...baseTransition, delay: reduceMotion ? 0 : 0.3 }}
+          className="mt-8 flex items-center justify-center gap-2 text-xs "
+        >
+          <span>Desarrollado por</span>
+          <div className="flex items-center gap-1">
+            <Image
+              src="/blue-logo.svg"
+              alt="blueprintdata"
+              width={16}
+              height={16}
+              className="opacity-70"
+            />
+            <span className="font-medium">blueprintdata</span>
+          </div>
+        </motion.div>
       </div>
     </section>
   )
