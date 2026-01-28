@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: ogImagen,
+        url: ogImage,
         width: 1200,
         height: 630,
         alt: title,
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     creator: '@blueprintdata_',
     title,
     description,
-    images: [ogImagen],
+    images: [ogImage],
   },
   icons: {
     icon: `${basePath}/favicon.svg`,
