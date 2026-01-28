@@ -34,25 +34,25 @@ export const Footer = memo(function Footer({ generatedAt, lookbackDays }: Footer
             href="https://www.linkedin.com/company/bpdata/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-all hover:scale-110 active:scale-90"
+            className="hover:text-primary transition-[color,transform] hover:scale-110 active:scale-90 motion-reduce:transition-none motion-reduce:transform-none"
             aria-label="LinkedIn"
           >
-            <Linkedin className="h-5 w-5" />
+            <Linkedin className="h-5 w-5" aria-hidden="true" />
           </a>
           <a
             href="https://github.com/blueprint-data"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-all hover:scale-110 active:scale-90"
+            className="hover:text-primary transition-[color,transform] hover:scale-110 active:scale-90 motion-reduce:transition-none motion-reduce:transform-none"
             aria-label="GitHub"
           >
-            <Github className="h-5 w-5" />
+            <Github className="h-5 w-5" aria-hidden="true" />
           </a>
           <a
             href="https://x.com/blueprintdata_"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-all hover:scale-110 active:scale-90"
+            className="hover:text-primary transition-[color,transform] hover:scale-110 active:scale-90 motion-reduce:transition-none motion-reduce:transform-none"
             aria-label="X (Twitter)"
           >
             <svg
@@ -74,7 +74,7 @@ export const Footer = memo(function Footer({ generatedAt, lookbackDays }: Footer
             aria-label="Sitio principal"
           >
             <span className="flex items-center gap-1.5">
-              <Globe className="h-4 w-4" />
+              <Globe className="h-4 w-4" aria-hidden="true" />
               blueprintdata.xyz
             </span>
           </a>
@@ -93,7 +93,7 @@ export const Footer = memo(function Footer({ generatedAt, lookbackDays }: Footer
             aria-label="Contacto"
           >
             <span className="flex items-center gap-1.5">
-              <Mail className="h-4 w-4" />
+              <Mail className="h-4 w-4" aria-hidden="true" />
               contact@blueprintdata.xyz
             </span>
           </a>
@@ -106,7 +106,7 @@ export const Footer = memo(function Footer({ generatedAt, lookbackDays }: Footer
           </p>
           <div className="flex flex-col items-center gap-1">
             <span className="inline-flex items-center gap-2 text-[10px] font-mono tracking-tighter text-muted-foreground/60 uppercase">
-              <Plane className="h-3 w-3" />
+              <Plane className="h-3 w-3" aria-hidden="true" />
               FUENTE:
               <a
                 href="https://www.aeropuertosargentina.com/es"

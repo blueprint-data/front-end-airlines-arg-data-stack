@@ -77,7 +77,7 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
       <section className="cv-auto mx-auto max-w-5xl px-4 py-8">
         <div className="rounded-3xl border border-white/5 bg-card/40 p-16 text-center backdrop-blur-3xl shadow-2xl">
           <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
-            <Info className="h-8 w-8 text-muted-foreground/40" />
+            <Info className="h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
           </div>
           <h3 className="text-xl font-bold text-foreground">Sin datos operativos</h3>
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">No hay registros de vuelos para los filtros seleccionados en este periodo.</p>
@@ -99,7 +99,7 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
         <div className="flex flex-col">
           <div className="flex items-center gap-3 mb-3 lg:mb-4">
             <div className="flex h-7 w-7 lg:h-8 lg:w-8 items-center justify-center rounded-lg bg-primary/20 ring-1 ring-primary/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-              <Plane className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-primary" />
+              <Plane className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-primary" aria-hidden="true" />
             </div>
             <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">Monitor Operativo Histórico</span>
           </div>
@@ -146,15 +146,15 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
                 initial={{ opacity: 0, scale: 0.9, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.08, ease: "circOut" }}
-                className="group relative flex flex-col items-center p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 bg-card/10 backdrop-blur-2xl transition-all duration-500 hover:bg-card/30 hover:border-white/20 hover:shadow-2xl hover:translate-y-[-4px]"
+                className="group relative flex flex-col items-center p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/5 bg-card/10 backdrop-blur-2xl transition-[transform,box-shadow,border-color,background-color] duration-500 hover:bg-card/30 hover:border-white/20 hover:shadow-2xl hover:translate-y-[-4px] motion-reduce:transition-none motion-reduce:transform-none"
               >
                 {/* Status Icon */}
                 <div className={cn(
-                  "mb-3 sm:mb-5 flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl ring-2 sm:ring-4 shadow-lg transition-all duration-700 group-hover:rotate-[10deg] group-hover:scale-110",
+                  "mb-3 sm:mb-5 flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl ring-2 sm:ring-4 shadow-lg transition-transform duration-700 group-hover:rotate-[10deg] group-hover:scale-110 motion-reduce:transition-none motion-reduce:transform-none",
                   config.color,
                   config.ring
                 )}>
-                  <Icon className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
+                  <Icon className="h-5 w-5 sm:h-7 sm:w-7 text-white" aria-hidden="true" />
                 </div>
 
                 {/* Quantitative Data */}
@@ -219,7 +219,7 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
           {sortedBuckets.map((bucket) => {
             const config = BUCKET_CONFIG[bucket.bucket] || BUCKET_CONFIG.on_time_or_early
             return (
-              <div key={`legend-${bucket.bucket}`} className="flex items-center gap-1.5 sm:gap-2 transition-all duration-300">
+              <div key={`legend-${bucket.bucket}`} className="flex items-center gap-1.5 sm:gap-2 transition-colors duration-300">
                 <div className={cn("h-1.5 w-1.5 rounded-full shadow-[0_0_5px_rgba(0,0,0,0.5)]", config.color)} />
                 <span className={cn(
                   "text-[8px] sm:text-[10px] font-black uppercase tracking-widest drop-shadow-[0_0_8px_currentColor] brightness-125",

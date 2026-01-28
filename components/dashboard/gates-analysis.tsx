@@ -152,7 +152,7 @@ export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = []
                         <button
                             key={mode.id}
                             onClick={() => setViewMode(mode.id as ViewMode)}
-                            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${viewMode === mode.id
+                            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-[background-color,color,box-shadow] whitespace-nowrap motion-reduce:transition-none ${viewMode === mode.id
                                 ? "bg-primary text-primary-foreground shadow-sm"
                                 : "text-muted-foreground hover:text-foreground"
                                 }`}
@@ -239,7 +239,7 @@ export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = []
                                                         <div
                                                             key={idx}
                                                             className={cn(
-                                                                "group/cell relative h-10 rounded-sm transition-all duration-300",
+                                                                "group/cell relative h-10 rounded-sm transition-[transform,box-shadow] duration-300 motion-reduce:transition-none motion-reduce:transform-none",
                                                                 !isEmpty && "hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:z-20 hover:scale-[1.2] active:scale-[1.1] cursor-help"
                                                             )}
                                                             style={{
@@ -263,7 +263,7 @@ export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = []
                                                                         </span>
                                                                     </div>
                                                                     {/* Floating label - visible on hover or active (tap) */}
-                                                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-foreground text-background text-[10px] font-bold rounded-lg opacity-0 group-hover/cell:opacity-100 group-active/cell:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap z-30 shadow-2xl border border-white/10 scale-90 group-hover/cell:scale-100 group-active/cell:scale-100 origin-bottom">
+                                                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-foreground text-background text-[10px] font-bold rounded-lg opacity-0 group-hover/cell:opacity-100 group-active/cell:opacity-100 pointer-events-none transition-[opacity,transform] duration-200 whitespace-nowrap z-30 shadow-2xl border border-white/10 scale-90 group-hover/cell:scale-100 group-active/cell:scale-100 origin-bottom motion-reduce:transition-none motion-reduce:transform-none">
                                                                         {val} {val === 1 ? 'vuelo' : 'vuelos'} · {idx}:00h
                                                                     </div>
                                                                 </>
@@ -279,7 +279,7 @@ export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = []
                         </div>
 
                         {/* Mobile Overlay Hint */}
-                        <div className="md:hidden mt-2 flex items-center justify-center gap-2 text-[10px] font-mono text-muted-foreground animate-pulse">
+                        <div className="md:hidden mt-2 flex items-center justify-center gap-2 text-[10px] font-mono text-muted-foreground animate-pulse motion-reduce:animate-none">
                             <span>← Desliza para ver cronograma completo →</span>
                         </div>
                     </div>

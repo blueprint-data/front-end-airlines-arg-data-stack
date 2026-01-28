@@ -61,15 +61,15 @@ export const SmartInsights = memo(function SmartInsights({ topDelays, gates }: S
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {/* Insight 1: Hora Pico */}
-                <div className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-card/10 p-7 backdrop-blur-3xl shadow-xl transition-all duration-700 hover:border-primary/20 hover:bg-card/20">
+                <div className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-card/10 p-7 backdrop-blur-3xl shadow-xl transition-[background-color,border-color] duration-700 hover:border-primary/20 hover:bg-card/20 motion-reduce:transition-none">
                     <div className="flex items-start justify-between mb-5">
                         <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary shadow-inner">
-                            <Clock className="h-6 w-6" />
+                            <Clock className="h-6 w-6" aria-hidden="true" />
                         </div>
                         <div className="flex gap-1">
-                            <span className="h-1 w-1 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.3s]" />
-                            <span className="h-1 w-1 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.15s]" />
-                            <span className="h-1 w-1 rounded-full bg-primary/40 animate-bounce" />
+                            <span className="h-1 w-1 rounded-full bg-primary/40 animate-bounce motion-reduce:animate-none [animation-delay:-0.3s]" />
+                            <span className="h-1 w-1 rounded-full bg-primary/40 animate-bounce motion-reduce:animate-none [animation-delay:-0.15s]" />
+                            <span className="h-1 w-1 rounded-full bg-primary/40 animate-bounce motion-reduce:animate-none" />
                         </div>
                     </div>
                     <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 mb-3">Hora Pico Operativa</h3>
@@ -84,13 +84,13 @@ export const SmartInsights = memo(function SmartInsights({ topDelays, gates }: S
 
                 {/* Insight 2: Alerta Crítica */}
                 {insights.worstFlight && (
-                    <div className="group relative overflow-hidden rounded-[2.5rem] border border-red-500/10 bg-red-500/5 p-7 backdrop-blur-3xl shadow-xl transition-all duration-700 hover:border-red-500/30 hover:bg-red-500/10">
+                    <div className="group relative overflow-hidden rounded-[2.5rem] border border-red-500/10 bg-red-500/5 p-7 backdrop-blur-3xl shadow-xl transition-[background-color,border-color] duration-700 hover:border-red-500/30 hover:bg-red-500/10 motion-reduce:transition-none">
                         <div className="flex items-start justify-between mb-5">
                             <div className="p-2.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 shadow-inner">
-                                <AlertCircle className="h-6 w-6" />
+                                <AlertCircle className="h-6 w-6" aria-hidden="true" />
                             </div>
                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20">
-                                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" />
                                 <span className="text-[8px] font-black uppercase tracking-widest text-red-400">Crítico</span>
                             </div>
                         </div>
@@ -107,12 +107,12 @@ export const SmartInsights = memo(function SmartInsights({ topDelays, gates }: S
 
                 {/* Insight 3: Gate Eficiente */}
                 {insights.bestGate && (
-                    <div className="group relative overflow-hidden rounded-[2.5rem] border border-emerald-500/10 bg-emerald-500/5 p-7 backdrop-blur-3xl shadow-xl transition-all duration-700 hover:border-emerald-500/30 hover:bg-emerald-500/10">
+                    <div className="group relative overflow-hidden rounded-[2.5rem] border border-emerald-500/10 bg-emerald-500/5 p-7 backdrop-blur-3xl shadow-xl transition-[background-color,border-color] duration-700 hover:border-emerald-500/30 hover:bg-emerald-500/10 motion-reduce:transition-none">
                         <div className="flex items-start justify-between mb-5">
                             <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shadow-inner">
-                                <MapPin className="h-6 w-6" />
+                                <MapPin className="h-6 w-6" aria-hidden="true" />
                             </div>
-                            <TrendingUp className="h-5 w-5 text-emerald-500/40 group-hover:text-emerald-500 transition-colors duration-700" />
+                            <TrendingUp className="h-5 w-5 text-emerald-500/40 group-hover:text-emerald-500 transition-colors duration-700 motion-reduce:transition-none" aria-hidden="true" />
                         </div>
                         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/60 mb-3">Rendimiento Destacado</h3>
                         <p className="text-xl font-bold text-foreground leading-snug">

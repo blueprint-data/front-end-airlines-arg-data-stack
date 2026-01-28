@@ -347,7 +347,7 @@ export function DashboardContent() {
     }, [updateFilters])
 
     return (
-        <main className="min-h-screen bg-background">
+        <main id="main-content" className="min-h-screen bg-background">
             <Header />
 
             <div className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden">

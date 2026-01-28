@@ -31,11 +31,11 @@ function SortIcon({
   sortOrder: SortOrder
 }) {
   if (activeKey !== columnKey) {
-    return <ArrowUpDown className="ml-1 inline h-4 w-4 opacity-50" />
+    return <ArrowUpDown className="ml-1 inline h-4 w-4 opacity-50" aria-hidden="true" />
   }
   return sortOrder === "asc"
-    ? <ArrowUp className="ml-1 inline h-4 w-4" />
-    : <ArrowDown className="ml-1 inline h-4 w-4" />
+    ? <ArrowUp className="ml-1 inline h-4 w-4" aria-hidden="true" />
+    : <ArrowDown className="ml-1 inline h-4 w-4" aria-hidden="true" />
 }
 
 interface RoutesTableProps {
@@ -86,7 +86,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
       <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="rounded-[2.5rem] border border-white/5 bg-card/10 p-16 text-center backdrop-blur-3xl shadow-2xl">
           <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
-            <ArrowUpRight className="h-8 w-8 text-muted-foreground/40 rotate-45" />
+            <ArrowUpRight className="h-8 w-8 text-muted-foreground/40 rotate-45" aria-hidden="true" />
           </div>
           <h3 className="text-xl font-bold text-foreground">No hay rutas por acá</h3>
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
@@ -126,7 +126,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
               size="sm"
               onClick={() => handleSort(option.id as SortKey)}
               className={cn(
-                "h-8 px-4 text-xs font-bold transition-all rounded-lg",
+                "h-8 px-4 text-xs font-bold transition-[background-color,color,box-shadow] rounded-lg motion-reduce:transition-none",
                 sortKey === option.id
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5"
@@ -152,12 +152,12 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-card/40 p-5 backdrop-blur-xl shadow-lg hover:border-primary/30 transition-all duration-500 hover:shadow-primary/5 hover:translate-y-[-2px]"
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-card/40 p-5 backdrop-blur-xl shadow-lg hover:border-primary/30 transition-[transform,box-shadow,border-color,background-color] duration-500 hover:shadow-primary/5 hover:translate-y-[-2px] motion-reduce:transition-none motion-reduce:transform-none"
             >
               {/* Performance Indicator Strip */}
               <div
                 className={cn(
-                  "absolute left-0 top-0 bottom-0 w-1 transition-all duration-500 group-hover:w-1.5",
+                  "absolute left-0 top-0 bottom-0 w-1 transition-[width] duration-500 group-hover:w-1.5 motion-reduce:transition-none",
                   isHighDelay ? "bg-red-500" : isLowDelay ? "bg-emerald-500" : "bg-primary"
                 )}
               />
@@ -172,7 +172,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/5 border border-white/5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                   <span className="text-[10px] font-mono font-bold text-foreground">
                     {formatNumber(route.total_flights)} <span className="text-muted-foreground opacity-60">OPS</span>
                   </span>
@@ -195,7 +195,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
                     <div className="flex-1 flex flex-col items-center">
                       <div className="w-full h-px border-t border-dashed border-muted-foreground/30 relative">
                         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-transparent">
-                          <ArrowUpRight className="h-3.5 w-3.5 text-primary/60 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-transform duration-500" />
+                          <ArrowUpRight className="h-3.5 w-3.5 text-primary/60 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-transform duration-500 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />
                         </div>
                       </div>
                     </div>
@@ -215,7 +215,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
               <div className="flex items-center justify-between pt-4 border-t border-white/5">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-1.5">
-                    <Clock className="h-3 w-3 text-muted-foreground/60" />
+                    <Clock className="h-3 w-3 text-muted-foreground/60" aria-hidden="true" />
                     <span className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-wider">Demora Promedio</span>
                   </div>
                   <div className="flex items-baseline gap-1">
@@ -230,8 +230,8 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
                 </div>
 
                 {/* Decorative element instead of a button */}
-                <div className="h-11 w-11 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-primary/5 group-hover:border-primary/10 transition-all duration-300">
-                  <ArrowUpRight className="h-5 w-5 text-muted-foreground/20 group-hover:text-primary/40 transition-all duration-500" />
+                <div className="h-11 w-11 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-primary/5 group-hover:border-primary/10 transition-[background-color,border-color] duration-300 motion-reduce:transition-none">
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground/20 group-hover:text-primary/40 transition-[color,transform] duration-500 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />
                 </div>
               </div>
             </motion.div>

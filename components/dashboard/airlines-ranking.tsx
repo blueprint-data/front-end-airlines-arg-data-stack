@@ -70,7 +70,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
       <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
         <div className="rounded-3xl border border-white/5 bg-card/20 p-16 text-center backdrop-blur-3xl shadow-2xl">
           <div className="mx-auto h-16 w-16 bg-muted/10 rounded-2xl flex items-center justify-center mb-6 border border-white/5">
-            <Info className="h-8 w-8 text-muted-foreground/40" />
+            <Info className="h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
           </div>
           <h3 className="text-xl font-bold text-foreground">Sin datos de ranking</h3>
           <p className="text-muted-foreground mt-2 max-w-sm mx-auto">No hay registros de aerolíneas para los filtros seleccionados.</p>
@@ -97,7 +97,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 ring-1 ring-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-              <Trophy className="h-4 w-4 text-emerald-400" />
+              <Trophy className="h-4 w-4 text-emerald-400" aria-hidden="true" />
             </div>
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400/80">Rating de Puntualidad</span>
           </div>
@@ -119,10 +119,10 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
             <div className="relative z-10 flex flex-col h-full">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                  <Award className="h-5 w-5 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" aria-hidden="true" />
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/80">La más puntual</span>
                 </div>
-                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,1)]" />
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none shadow-[0_0_10px_rgba(16,185,129,1)]" />
               </div>
 
               <h3 className="text-2xl font-black text-white italic truncate tracking-tight mb-4 group-hover/winner:text-emerald-400 transition-colors duration-500">
@@ -151,7 +151,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
 
             {/* Aesthetic Background Accents */}
             <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-emerald-500/10 rounded-full blur-3xl" />
-            <Plane className="absolute top-1/2 -right-4 h-24 w-24 text-emerald-400/5 -translate-y-1/2 rotate-[15deg] group-hover/winner:rotate-0 transition-transform duration-1000" />
+            <Plane className="absolute top-1/2 -right-4 h-24 w-24 text-emerald-400/5 -translate-y-1/2 rotate-[15deg] group-hover/winner:rotate-0 transition-transform duration-1000 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />
           </motion.div>
         )}
       </div>
@@ -159,7 +159,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
       {/* Main Chart Card */}
       <div className="group relative rounded-[2.5rem] border border-white/5 bg-card/10 backdrop-blur-3xl p-6 lg:p-10 shadow-3xl hover:border-white/10 transition-colors duration-700">
         <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
-          <TrendingUp className="h-32 w-32 text-primary/10" />
+          <TrendingUp className="h-32 w-32 text-primary/10" aria-hidden="true" />
         </div>
 
         <div className="h-[420px] w-full mt-4">
@@ -261,7 +261,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
                   <Cell
                     key={`cell-v2-${index}`}
                     fill={`url(#bar-grad-${index % colors.length})`}
-                    className="filter drop-shadow-[0_0_8px_rgba(6,182,212,0.2)] transition-all duration-500 hover:brightness-110"
+                    className="filter drop-shadow-[0_0_8px_rgba(6,182,212,0.2)] transition-[filter] duration-500 hover:brightness-110 motion-reduce:transition-none"
                   />
                 ))}
               </Bar>
