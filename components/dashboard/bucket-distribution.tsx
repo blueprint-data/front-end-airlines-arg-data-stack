@@ -65,7 +65,7 @@ export const BucketDistributionChart = memo(function BucketDistributionChart({
     () => buckets.reduce((acc: number, bucket: BucketDistribution) => acc + (bucket.total_flights || 0), 0),
     [buckets]
   )
-  const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
+  const windowLabel = lookbackDays ? `${lookbackDays} días` : "30 días"
 
   const sortedBuckets = useMemo(() => {
     const order = ["on_time_or_early", "delay_15_0", "delay_30_15", "delay_45_30", "delay_over_45", "cancelled"]

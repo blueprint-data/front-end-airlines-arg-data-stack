@@ -1,4 +1,4 @@
-import { useMemo, memo } from "react"
+import { useMemo, memo, useState } from "react"
 import { motion } from "framer-motion"
 import {
   BarChart,
@@ -10,16 +10,25 @@ import {
   Cell,
 } from "recharts"
 import { Trophy, Plane, TrendingUp, Award, Info } from "lucide-react"
-import { cn } from "@/lib/utils"
 import type { RouteMetric } from "@/lib/types"
 import { formatPercentage, formatNumber } from "@/lib/format"
+import { useIsMobile } from "@/hooks/use-mobile"
+
+interface AirlineRankingItem {
+  name: string
+  onTimePercentage: number
+  totalFlights: number
+  avgDelay: number
+}
 
 interface AirlinesRankingProps {
   data: RouteMetric[]
 }
 
 export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesRankingProps) {
-  const chartData = useMemo(() => {
+  const isMobile = useIsMobile()
+
+  const chartData = useMemo<AirlineRankingItem[]>(() => {
     const airlineMap = new Map<
       string,
       {
@@ -66,6 +75,10 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
 
   const colors = ["#06b6d4", "#8b5cf6", "#22c55e", "#f59e0b", "#ec4899"]
 
+  const topAirlines = chartData // already limited to airlines with > 30 flights
+
+  const [selectedAirlineName, setSelectedAirlineName] = useState<string | null>(null)
+
   if (chartData.length === 0) {
     return (
       <section className="cv-auto mx-auto max-w-5xl px-4 py-12">
@@ -80,8 +93,11 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
     )
   }
 
-  const topAirlines = chartData // already limited to airlines with > 30 flights
-
+  const activeName =
+    selectedAirlineName && chartData.some((item) => item.name === selectedAirlineName)
+      ? selectedAirlineName
+      : chartData[0]?.name ?? null
+  const selectedAirline = chartData.find((item) => item.name === activeName) ?? null
   const winner = chartData[0]
 
   return (
@@ -157,7 +173,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
       </div>
 
       {/* Main Chart Card */}
-      <div className="group relative rounded-[2.5rem] border border-white/5 bg-card/10 backdrop-blur-3xl p-6 lg:p-10 shadow-3xl hover:border-white/10 transition-colors duration-700">
+      <div className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-card/10 backdrop-blur-3xl p-6 lg:p-10 shadow-3xl hover:border-white/10 transition-colors duration-700">
         <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
           <TrendingUp className="h-32 w-32 text-primary/10" aria-hidden="true" />
         </div>
@@ -214,41 +230,45 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
                 tickLine={false}
               />
 
-              <Tooltip
-                cursor={{ fill: "rgba(255, 255, 255, 0.03)", radius: 12 }}
-                content={({ active, payload }) => {
-                  if (!active || !payload?.length) return null
-                  const item = payload[0].payload
-                  return (
-                    <div className="rounded-2xl border border-white/10 bg-black/80 px-5 py-4 shadow-3xl backdrop-blur-2xl ring-1 ring-white/20">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="h-2 w-2 rounded-full bg-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">{item.name}</span>
+              {!isMobile && (
+                <Tooltip
+                  cursor={{ fill: "rgba(255, 255, 255, 0.03)", radius: 12 }}
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null
+                    const item = payload[0].payload
+                    return (
+                      <div className="rounded-2xl border border-white/10 bg-black/80 px-5 py-4 shadow-3xl backdrop-blur-2xl ring-1 ring-white/20">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-white">
+                            {item.name}
+                          </span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-10">
+                            <span className="text-sm font-medium text-white/50">Puntualidad</span>
+                            <span className="text-xl font-black text-primary tabular-nums">
+                              {formatPercentage(item.onTimePercentage)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-10 pt-2 border-t border-white/5">
+                            <span className="text-sm font-medium text-white/50">Vuelos</span>
+                            <span className="text-sm font-black text-white tabular-nums">
+                              {formatNumber(item.totalFlights)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-10">
+                            <span className="text-sm font-medium text-white/50">Demora media</span>
+                            <span className="text-sm font-black text-amber-400 tabular-nums">
+                              {formatNumber(item.avgDelay, 0)}m
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-10">
-                          <span className="text-sm font-medium text-white/50">Puntualidad</span>
-                          <span className="text-xl font-black text-primary tabular-nums">
-                            {formatPercentage(item.onTimePercentage)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-10 pt-2 border-t border-white/5">
-                          <span className="text-sm font-medium text-white/50">Vuelos</span>
-                          <span className="text-sm font-black text-white tabular-nums">
-                            {formatNumber(item.totalFlights)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-10">
-                          <span className="text-sm font-medium text-white/50">Demora media</span>
-                          <span className="text-sm font-black text-amber-400 tabular-nums">
-                            {formatNumber(item.avgDelay, 0)}m
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                }}
-              />
+                    )
+                  }}
+                />
+              )}
 
               <Bar
                 dataKey="onTimePercentage"
@@ -256,6 +276,12 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
                 animationDuration={1500}
                 animationEasing="ease-out"
                 barSize={32}
+                onClick={(_, index) => {
+                  const airline = topAirlines[index]
+                  if (airline) {
+                    setSelectedAirlineName(airline.name)
+                  }
+                }}
               >
                 {topAirlines.map((_, index) => (
                   <Cell
@@ -268,6 +294,52 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
             </BarChart>
           </ResponsiveContainer>
         </div>
+        {isMobile && (
+          <div className="mt-6 space-y-3">
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {topAirlines.map((airline) => (
+                <button
+                  key={airline.name}
+                  type="button"
+                  onClick={() => setSelectedAirlineName(airline.name)}
+                  className={`flex-shrink-0 rounded-2xl border px-4 py-2 text-xs font-semibold transition ${
+                    activeName === airline.name
+                      ? "border-primary bg-primary/10 text-white"
+                      : "border-white/10 text-muted-foreground"
+                  }`}
+                >
+                  <span className="block leading-tight">{airline.name}</span>
+                  <span className="text-[10px] font-black text-primary tabular-nums">
+                    {Math.round(airline.onTimePercentage)}%
+                  </span>
+                </button>
+              ))}
+            </div>
+            {selectedAirline && (
+              <div className="rounded-[2rem] border border-white/5 bg-card/90 p-5 text-sm text-foreground shadow-2xl backdrop-blur-2xl">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-muted-foreground/60">Seleccionado</p>
+                    <h3 className="text-xl font-black text-white">{selectedAirline.name}</h3>
+                  </div>
+                  <p className="text-2xl font-black text-primary tabular-nums">
+                    {Math.round(selectedAirline.onTimePercentage)}%
+                  </p>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Vuelos</span>
+                    <span className="text-lg font-black">{formatNumber(selectedAirline.totalFlights)}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Demora media</span>
+                    <span className="text-lg font-black text-amber-400">{formatNumber(selectedAirline.avgDelay, 0)}m</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </motion.section>
   )
