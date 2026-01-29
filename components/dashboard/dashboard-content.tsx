@@ -100,11 +100,17 @@ export function DashboardContent() {
         country: searchParams.get("country") || "",
         city: searchParams.get("city") || "",
         airline: searchParams.get("airline") || "",
-        windowDays: searchParams.get("windowDays") || "60",
-    }))
+    windowDays: searchParams.get("windowDays") || "30",
+  }))
 
-    const fallbackLookbackDays = Number(filters.windowDays || "60")
-    const heroLookbackDays = data?.headline?.lookback_days ?? fallbackLookbackDays
+  const fallbackLookbackDays = Number(filters.windowDays || "30")
+  const lookbackDaysFromHeadline = data?.headline?.lookback_days
+  const normalizedLookbackDays = Math.min(
+    lookbackDaysFromHeadline ?? fallbackLookbackDays,
+    30,
+  )
+  const normalizedLookbackDaysString = String(normalizedLookbackDays)
+    const heroLookbackDays = normalizedLookbackDays
 
     const deferredFilters = useDeferredValue(filters)
     const [detailsRequested, setDetailsRequested] = useState(false)
@@ -182,7 +188,7 @@ export function DashboardContent() {
         syncParam("airline", filters.airline)
         syncParam(
             "windowDays",
-            filters.windowDays && filters.windowDays !== "60" ? filters.windowDays : ""
+            filters.windowDays && filters.windowDays !== "30" ? filters.windowDays : ""
         )
 
         const queryString = params.toString()
@@ -225,14 +231,11 @@ export function DashboardContent() {
     }, [data?.routes, filters.origin])
 
     useEffect(() => {
-        if (data?.headline?.lookback_days) {
-            const days = String(data.headline.lookback_days)
-            if (!searchParams.has("windowDays") && filters.windowDays !== days) {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                setFilters(prev => ({ ...prev, windowDays: days }))
-            }
+    if (!searchParams.has("windowDays") && filters.windowDays !== normalizedLookbackDaysString) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setFilters(prev => ({ ...prev, windowDays: normalizedLookbackDaysString }))
         }
-    }, [data?.headline?.lookback_days, searchParams, filters.windowDays])
+    }, [normalizedLookbackDaysString, searchParams, filters.windowDays])
 
     const shouldComputeRoutes = (detailsRequested || detailsLoaded) && hasRoutes
     const showRouteDetails = shouldComputeRoutes
@@ -416,7 +419,7 @@ export function DashboardContent() {
                             <BucketDistributionChart
                                 buckets={filteredBuckets}
                                 avgDelayMinutes={routeMetrics.avgDelayMinutes}
-                                lookbackDays={data.headline.lookback_days}
+                                lookbackDays={normalizedLookbackDays}
                             />
                         ) : (
                             <ChartSkeleton />
@@ -450,10 +453,10 @@ export function DashboardContent() {
             <FAQ />
 
             {data && (
-                <Footer
-                    generatedAt={data.generatedAt}
-                    lookbackDays={data.headline.lookback_days}
-                />
+                    <Footer
+                        generatedAt={data.generatedAt}
+                        lookbackDays={normalizedLookbackDays}
+                    />
             )}
         </main>
     )

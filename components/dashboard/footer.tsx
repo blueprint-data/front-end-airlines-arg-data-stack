@@ -13,7 +13,7 @@ interface FooterProps {
 
 export const Footer = memo(function Footer({ generatedAt, lookbackDays }: FooterProps) {
   const dateLabel = generatedAt ? formatDateShort(generatedAt) : ""
-  const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
+  const windowLabel = lookbackDays ? `${lookbackDays} días` : "30 días"
 
   return (
     <footer className="border-t border-border/50 py-12">

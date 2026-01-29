@@ -11,7 +11,7 @@ interface HeroProps {
 
 export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps) {
   const dateLabel = generatedAt ? formatDateShort(generatedAt) : "";
-  const windowLabel = lookbackDays ? `${lookbackDays} días` : "60 días"
+  const windowLabel = lookbackDays ? `${lookbackDays} días` : "30 días"
   const prefersReducedMotion = useReducedMotion()
   const isMobile = useIsMobile()
   const reduceMotion = prefersReducedMotion || isMobile

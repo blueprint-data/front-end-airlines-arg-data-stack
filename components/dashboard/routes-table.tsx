@@ -195,7 +195,7 @@ export const TopDestinationsTable = memo(function TopDestinationsTable({ data }:
                     <div className="flex-1 flex flex-col items-center">
                       <div className="w-full h-px border-t border-dashed border-muted-foreground/30 relative">
                         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-transparent">
-                          <ArrowUpRight className="h-3.5 w-3.5 text-primary/60 group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-transform duration-500 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />
+                          <ArrowUpRight className="h-3.5 w-3.5 text-primary/group-hover:translate-x-1 group-hover:translate-y-[-4px] transition-transform duration-500 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />
                         </div>
                       </div>
                     </div>

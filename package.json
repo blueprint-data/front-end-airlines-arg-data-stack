@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "npm run sync-data && next build && mkdir -p dist && cp -r out/. dist",
+    "build:next": "next build && mkdir -p dist && cp -r out/. dist",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "serve dist",
@@ -68,6 +69,10 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "16.0.10",
+    "@semantic-release/changelog": "^8.0.0",
+    "@semantic-release/commit-analyzer": "^9.0.0",
+    "@semantic-release/github": "^10.1.0",
+    "@semantic-release/release-notes-generator": "^10.1.0",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22.19.7",
     "@types/react": "^19",

@@ -18,23 +18,25 @@ interface TrendChartProps {
   data: DailyStatus[]
 }
 
+const DEFAULT_TREND_WINDOW_DAYS = 15
+
 export const TrendChart = memo(function TrendChart({ data }: TrendChartProps) {
   const isMobile = useIsMobile()
 
   const chartData = useMemo(() => {
-    return [...data]
-      .sort(
-        (a, b) =>
-          new Date(a.flight_date).getTime() - new Date(b.flight_date).getTime()
-      )
-      .map((item) => {
-        const date = new Date(item.flight_date)
-        return {
-          date: formatDateForChart(item.flight_date, isMobile),
-          fullDate: date.toLocaleDateString("es-AR", {
-            weekday: "short",
-            day: "2-digit",
-            month: "short"
+    const sorted = [...data].sort(
+      (a, b) =>
+        new Date(a.flight_date).getTime() - new Date(b.flight_date).getTime()
+    )
+    const recent = sorted.slice(-DEFAULT_TREND_WINDOW_DAYS)
+    return recent.map((item) => {
+      const date = new Date(item.flight_date)
+      return {
+        date: formatDateForChart(item.flight_date, isMobile),
+        fullDate: date.toLocaleDateString("es-AR", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short"
           }),
           avgDelay: Math.round(item.avg_delay_minutes * 10) / 10,
           totalFlights: item.total_flights,
@@ -70,7 +72,7 @@ export const TrendChart = memo(function TrendChart({ data }: TrendChartProps) {
     return Math.floor(chartData.length / 10) // ~10 labels
   }, [chartData.length, isMobile])
 
-  if (data.length === 0) {
+  if (chartData.length === 0) {
     return null
   }
 
@@ -86,7 +88,7 @@ export const TrendChart = memo(function TrendChart({ data }: TrendChartProps) {
           Tendencia de <span className="text-primary text-glow-primary">Demoras</span>
         </h2>
         <p className="mt-1 text-sm font-medium text-muted-foreground leading-relaxed">
-          Evolución del tiempo de espera promedio día tras día. <span className="text-foreground/80">Mirá cómo cambia</span> la puntualidad.
+          Evolución del tiempo de espera promedio día tras día durante los últimos {DEFAULT_TREND_WINDOW_DAYS} días. <span className="text-foreground/80">Mirá cómo cambia</span> la puntualidad.
         </p>
       </div>
 
