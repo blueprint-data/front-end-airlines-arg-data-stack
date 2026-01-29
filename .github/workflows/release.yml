@@ -48,7 +48,5 @@ jobs:
         run: npm install
       - name: Create semantic-release
         uses: codfish/semantic-release-action@v4
-        with:
-          extra_args: ""
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
