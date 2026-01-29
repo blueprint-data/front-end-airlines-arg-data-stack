@@ -12,7 +12,7 @@ Un dashboard interactivo construido con **Next.js/App Router** que expone métri
 ## 🧱 Arquitectura y datos
 
 - **Front-end**: Next.js 16.1.6 + TypeScript, Tailwind CSS, ShadcnUI y Recharts para los gráficos.
-- **Pipeline**: El repositorio [`blueprint-data/airlines-data`](https://github.com/blueprint-data/airlines-data) genera los JSON firmados que terminan en el bucket de GCS consumido aquí. Esa fuente ejecuta las consultas en BigQuery, agrupa métricas históricas y publica los snapshots en `gs://`.
+- **Pipeline**: El repositorio [`blueprint-data/airlines-arg-data-stack`](https://github.com/blueprint-data/airlines-arg-data-stack) genera los JSON firmados que terminan en el bucket de GCS consumido aquí. Esa fuente ejecuta las consultas en BigQuery, agrupa métricas históricas y publica los snapshots en `gs://`.
 - **Sincronización**: `scripts/sync-data.ts` descarga los archivos firmados (`SIGNED_OBJECT_MAP`) desde el bucket (`SIGNED_GCS_BUCKET_NAME`) usando la cuenta del servicio (`GCP_SERVICE_ACCOUNT_JSON`) y los coloca en `data/` para el build.
 - **Hosting**: GitHub Pages publica el contenido estático a partir del directorio `dist/` generado por `npm run build`.
 
