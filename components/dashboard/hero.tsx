@@ -47,8 +47,8 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
           transition={{ ...baseTransition, delay: reduceMotion ? 0 : 0.2 }}
           className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg md:text-xl font-medium leading-relaxed"
         >
-          Compará el desempeño real de los vuelos que salen de Argentina.
-          <span className="block mt-2 text-foreground/80">Chequeá puntualidad, demoras y cancelaciones en tiempo real.</span>
+          Análisis de puntualidad, demoras y cancelaciones de vuelos en Argentina.
+          <span className="block mt-2 text-foreground/80">Datos reales de {windowLabel}, actualizados cada 12 horas.</span>
         </motion.p>
 
         <motion.div

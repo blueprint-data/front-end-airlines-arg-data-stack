@@ -28,6 +28,30 @@ export default function DashboardPage() {
       "@id": `${siteUrl}/#organization`,
     },
   }
+  const datasetJson = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Puntualidad de Vuelos en Argentina",
+    description:
+      "Datos de puntualidad, demoras y cancelaciones de vuelos que operan desde aeropuertos de Argentina.",
+    url: siteUrl,
+    creator: {
+      "@id": `${siteUrl}/#organization`,
+    },
+    datePublished: new Date().toISOString(),
+    dateModified: new Date().toISOString(),
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    distribution: {
+      "@type": "DataDownload",
+      contentUrl: `${siteUrl}/data/manifest.json`,
+      encodingFormat: "application/json",
+    },
+    spatialCoverage: {
+      "@type": "Place",
+      name: "Argentina",
+    },
+    temporalCoverage: "P30D",
+  }
   const faqJson = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -50,6 +74,10 @@ export default function DashboardPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJson) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetJson) }}
       />
       <script
         type="application/ld+json"
