@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 const siteOrigin = 'https://infoaeropuertos.ar'
 const basePath = ''
 const siteUrl = siteOrigin
-const title = 'Info Aeropuertos Argentina'
+const title = 'InfoAeropuertos Argentina'
 const description =
   'Compará aerolíneas y rutas con datos reales de puntualidad, demoras y cancelaciones en Argentina. Elegí mejor con insights claros.'
 const ogImage = `${siteUrl}/og-imagen.jpg`
