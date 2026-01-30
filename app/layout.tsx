@@ -20,28 +20,30 @@ const jetbrainsMono = JetBrains_Mono({
 const siteOrigin = 'https://infoaeropuertos.ar'
 const basePath = ''
 const siteUrl = siteOrigin
-const title = 'InfoAeropuertos Argentina'
+const brand = 'InfoAeropuertos'
+const title = 'InfoAeropuertos Argentina | Análisis de Puntualidad y Demoras de Vuelos'
 const description =
-  'Compará aerolíneas y rutas con datos reales de puntualidad, demoras y cancelaciones en Argentina. Elegí mejor con insights claros.'
+  'InfoAeropuertos Argentina: analizá puntualidad, demoras y cancelaciones de vuelos con datos reales actualizados cada 6 horas. Compará aerolíneas y rutas para elegir mejor.'
 const ogImage = `${siteUrl}/og-imagen.jpg`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: title,
-    template: `%s · ${title}`,
+    template: `%s · ${brand}`,
   },
   description,
   keywords: [
     "puntualidad vuelos argentina",
-    "demoras vuelos",
-    "cancelaciones vuelos",
-    "aerolineas argentinas",
-    "rendimiento aerolineas",
+    "demoras vuelos argentina",
+    "cancelaciones vuelos argentina",
+    "ranking aerolineas argentina",
+    "aerolineas mas puntuales",
+    "vuelos demorados hoy",
+    "estado de vuelos argentina",
+    "estadisticas de vuelos",
+    "comparar aerolineas",
     "aeropuertos argentina",
-    "estado de vuelos",
-    "datos de vuelos",
-    "blueprintdata",
   ],
   alternates: {
     canonical: siteUrl,
