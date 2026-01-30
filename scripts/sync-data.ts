@@ -78,12 +78,17 @@ async function sync() {
     }
 
     // Create manifest.json for the frontend
+    const EXPIRATION_HOURS = 6;
+    const generatedAt = new Date();
+    const expiresAt = new Date(generatedAt.getTime() + EXPIRATION_HOURS * 60 * 60 * 1000);
+
     const manifest = {
-        generated_at: new Date().toISOString(),
+        generated_at: generatedAt.toISOString(),
+        expires_at: expiresAt.toISOString(),
         urls: manifestUrls
     };
 
-    fs.writeFileSync(path.join(dataDir, "manifest.json"), JSON.stringify(manifest));
+    fs.writeFileSync(path.join(dataDir, "manifest.json"), JSON.stringify(manifest, null, 2));
     console.log("✓ manifest.json created");
 }
 
