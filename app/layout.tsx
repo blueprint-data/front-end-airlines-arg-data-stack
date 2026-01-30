@@ -70,7 +70,12 @@ export const metadata: Metadata = {
     creator: '@blueprintdata_',
     title,
     description,
-    images: [ogImage],
+    images: [
+      {
+        url: ogImage,
+        alt: title,
+      },
+    ],
   },
   icons: {
     icon: `${basePath}/favicon.svg`,
