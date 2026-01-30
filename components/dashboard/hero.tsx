@@ -38,7 +38,7 @@ export const Hero = memo(function Hero({ generatedAt, lookbackDays }: HeroProps)
           transition={{ ...baseTransition, delay: reduceMotion ? 0 : 0.1 }}
           className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance"
         >
-          Info Aeropuertos<br />
+          InfoAeropuertos<br />
           <span className="text-primary text-glow-primary">Argentina</span>
         </motion.h1>
         <motion.p
