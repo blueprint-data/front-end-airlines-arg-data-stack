@@ -222,7 +222,7 @@ export const AirlinesRanking = memo(function AirlinesRanking({ data }: AirlinesR
                       textAnchor="end"
                       className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground fill-current"
                     >
-                      {payload.value.length > 18 ? `${payload.value.substring(0, 15)}...` : payload.value}
+                      {payload.value.length > 18 ? `${payload.value.substring(0, 15)}…` : payload.value}
                     </text>
                   </g>
                 )}

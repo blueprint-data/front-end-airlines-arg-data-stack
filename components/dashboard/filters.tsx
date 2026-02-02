@@ -396,7 +396,7 @@ const FilterForm = ({
             city && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
           )}
         >
-          <SelectValue placeholder={country ? "Todas las ciudades" : "Elegí país..."} />
+          <SelectValue placeholder={country ? "Todas las ciudades" : "Elegí país…"} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todas las ciudades</SelectItem>

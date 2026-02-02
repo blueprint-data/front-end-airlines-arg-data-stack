@@ -83,11 +83,17 @@ export default function DashboardPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJson) }}
       />
-      <Suspense fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background">
-          <p className="text-sm font-mono text-muted-foreground">Cargando dashboard...</p>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div
+            className="flex min-h-screen items-center justify-center bg-background"
+            role="status"
+            aria-live="polite"
+          >
+            <p className="text-sm font-mono text-muted-foreground">Cargando dashboard…</p>
+          </div>
+        }
+      >
         <DashboardContent />
       </Suspense>
     </>

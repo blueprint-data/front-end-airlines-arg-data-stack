@@ -1,11 +1,12 @@
 import { memo, useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { asset, cn } from "@/lib/utils"
 
 export const Header = memo(function Header() {
     const [isScrolled, setIsScrolled] = useState(false)
+    const prefersReducedMotion = useReducedMotion()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -18,9 +19,9 @@ export const Header = memo(function Header() {
 
     return (
         <motion.header
-            initial={{ y: -20, opacity: 0 }}
+            initial={prefersReducedMotion ? false : { y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }}
             className={cn(
                 "fixed top-0 z-50 w-full transition-[background-color,border-color,box-shadow,backdrop-filter] duration-700 motion-reduce:transition-none",
                 isScrolled
