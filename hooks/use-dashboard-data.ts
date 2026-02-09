@@ -30,8 +30,7 @@ type DetailData = {
 
 const STORAGE_KEY = "dashboard-data-cache-v1"
 const STORAGE_VERSION = 1
-const DEFAULT_CACHE: RequestCache =
-  process.env.NODE_ENV === "production" ? "force-cache" : "no-store"
+const DEFAULT_CACHE: RequestCache = "no-cache"
 
 type StoredDashboardCache = {
   version: number
@@ -83,7 +82,7 @@ const clearStoredDashboard = () => {
   if (typeof window === "undefined") return
   try {
     window.localStorage.removeItem(STORAGE_KEY)
-  } catch {}
+  } catch { }
 }
 
 const readStoredDashboard = (): DashboardData | null => {
@@ -117,7 +116,7 @@ const writeStoredDashboard = (data: DashboardData) => {
       data,
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-  } catch {}
+  } catch { }
 }
 
 const isExpired = (expiresAt?: string) => {
@@ -135,12 +134,12 @@ let cachedRoutes: RouteMetric[] | null =
   initialCachedData?.routes ?? null
 let cachedDetails: DetailData | null = initialCachedData
   ? {
-      airlines: initialCachedData.airlines,
-      tops: initialCachedData.tops,
-      buckets: initialCachedData.buckets,
-      dailyStatus: initialCachedData.dailyStatus,
-      gates: initialCachedData.gates,
-    }
+    airlines: initialCachedData.airlines,
+    tops: initialCachedData.tops,
+    buckets: initialCachedData.buckets,
+    dailyStatus: initialCachedData.dailyStatus,
+    gates: initialCachedData.gates,
+  }
   : null
 let cachedExpiresAt: string | null = initialCachedData?.expiresAt ?? null
 let cachedGeneratedAt: string | null = initialCachedData?.generatedAt ?? null
@@ -203,7 +202,7 @@ async function fetchExport<T>(url: string, cache = DEFAULT_CACHE): Promise<T[]> 
 
 async function fetchManifest(): Promise<ManifestResponse> {
   const manifestPath = "./data/manifest.json"
-  const response = await fetch(manifestPath, { cache: DEFAULT_CACHE })
+  const response = await fetch(manifestPath, { cache: "no-store" })
   if (!response.ok) {
     console.error(
       `Failed to fetch manifest from ${manifestPath}: ${response.status} ${response.statusText}`
@@ -388,6 +387,19 @@ export function useDashboardData() {
       loadBase()
     } else {
       setLoading(false)
+      // Check for updates seamlessly
+      fetchManifest()
+        .then((newManifest) => {
+          if (!active) return
+          if (newManifest.generated_at !== initialData.generatedAt) {
+            console.log("New data detected, refreshing...")
+            clearMemoryCache()
+            loadBase()
+          }
+        })
+        .catch((e) => {
+          console.error("Background update check failed", e)
+        })
     }
 
     return () => {

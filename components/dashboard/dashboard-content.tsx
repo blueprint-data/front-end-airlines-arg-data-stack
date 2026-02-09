@@ -89,7 +89,7 @@ export function DashboardContent() {
     const [isHydrated, setIsHydrated] = useState(false)
     const isMobile = useIsMobile()
     const prefersReducedData = usePrefersReducedData()
-    const showHeroVideo = isHydrated
+    const showHeroVideo = isHydrated && !prefersReducedData
     const lazyMargin = isMobile ? "0px 0px" : "240px 0px"
 
     const isInitialMount = useRef(true)
@@ -355,6 +355,15 @@ export function DashboardContent() {
 
             <div className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0 overflow-hidden">
+                    <div aria-hidden="true" className="absolute inset-0 bg-background" />
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(6,182,212,0.20),transparent_60%)]"
+                    />
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.10),rgba(0,0,0,0.55),rgba(9,9,11,1))]"
+                    />
                     {showHeroVideo ? (
                         <video
                             autoPlay
@@ -364,7 +373,7 @@ export function DashboardContent() {
                             preload="metadata"
                             poster={asset("/og-imagen.jpg")}
                             aria-hidden="true"
-                            className="h-full w-full object-cover scale-105 brightness-[0.35] saturate-[0.7]"
+                            className="absolute inset-0 h-full w-full object-cover scale-105 brightness-[0.35] saturate-[0.7]"
                         >
                             <source
                                 src={asset("/hero-video.mp4")}
