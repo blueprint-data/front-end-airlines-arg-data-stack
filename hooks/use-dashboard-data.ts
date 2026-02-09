@@ -390,13 +390,15 @@ export function useDashboardData() {
       // Check for updates seamlessly
       fetchManifest()
         .then((newManifest) => {
+          if (!active) return
           if (newManifest.generated_at !== initialData.generatedAt) {
+            console.log("New data detected, refreshing...")
             clearMemoryCache()
             loadBase()
           }
         })
-        .catch(() => {
-          // Silent fail on background update check
+        .catch((e) => {
+          console.error("Background update check failed", e)
         })
     }
 
