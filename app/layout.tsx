@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { MotionProvider } from "@/components/motion-provider"
+import ClarityAnalytics from "@/components/clarity-analytics"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -93,6 +94,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <MotionProvider>
+          <ClarityAnalytics />
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 z-[100] rounded-md bg-background px-4 py-2 text-sm font-semibold text-foreground shadow-lg ring-1 ring-border"
