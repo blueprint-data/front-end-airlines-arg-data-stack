@@ -308,13 +308,14 @@ export const GatesAnalysis = memo(function GatesAnalysis({ className, gates = []
                                             ? ["dataMin - 10", "dataMax + 10"]
                                             : [0, "dataMax + 10"]
                                     }
-                                    tickFormatter={(value) =>
-                                        viewMode === "ontime"
-                                            ? `${value}%`
+                                    tickFormatter={(value) => {
+                                        const rounded = Math.round(value)
+                                        return viewMode === "ontime"
+                                            ? `${rounded}%`
                                             : viewMode === "delay"
-                                                ? `${value} min`
-                                                : String(value)
-                                    }
+                                                ? `${rounded} min`
+                                                : String(rounded)
+                                    }}
                                 />
 
                                 <YAxis
